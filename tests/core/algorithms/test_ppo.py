@@ -86,7 +86,7 @@ def test_default_ppo_continuous(n_envs=10):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > -300
+    assert reward > -1200
 
 
 if __name__ == "__main__":

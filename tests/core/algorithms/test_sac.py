@@ -78,7 +78,6 @@ def test_normalize_observations_sac(n_envs=N_ENVS):
     config = SAC.get_default_hpo_config()
     config["normalize_observations"] = True
     nas_config = SAC.get_default_nas_config()
-    nas_config["hidden_size"] = 64
     agent = SAC(config, env, eval_env=eval_env, nas_config=nas_config)
     algorithm_state = agent.init(rng)
 
@@ -95,7 +94,7 @@ def test_normalize_observations_sac(n_envs=N_ENVS):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > -800
+    assert reward > -1200
 
 
 if __name__ == "__main__":

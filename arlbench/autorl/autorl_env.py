@@ -295,6 +295,8 @@ class AutoRLEnv(gymnasium.Env):
                     "critic_opt_state": self._algorithm_state.runner_state.critic_train_state.opt_state,
                     "alpha_opt_state": self._algorithm_state.runner_state.alpha_train_state.opt_state,
                 }
+        else:
+            raise ValueError(f"Unsupported algorithm: {self._algorithm.name}")
 
     def step(
         self,

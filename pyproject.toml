@@ -22,6 +22,7 @@ dependencies = [
   "coverage==7.4.4",
   "chex==0.1.86",
   "xminigrid==0.8.0",
+  "gymnasium==1.2.0",
   "ruff",
   "hydra-core",
   "hydra-submitit-launcher",
@@ -57,7 +58,7 @@ tooling = ["commitizen", "pre-commit", "ruff"]
 test = ["pytest", "pytest-coverage", "pytest-cases", "ARLBench[examples]"]
 examples = ["hypersweeper"]
 doc = [
-  "automl_sphinx_theme", "gymnasium==0.29.1"
+  "automl_sphinx_theme"
 ]
 envpool = ["envpool==0.8.4"]
 

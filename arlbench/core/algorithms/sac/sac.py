@@ -394,7 +394,8 @@ class SAC(Algorithm):
             _action = self.env.sample_actions(dummy_rng)
 
             # for x64 enabled runs we have to explicitly cast the dummy action
-            _action = jnp.array(_action, dtype=jnp.float64)
+            dtype = jnp.float64 if jax.config.jax_enable_x64 else jnp.float32
+            _action = jnp.array(_action, dtype=dtype)
 
             _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 

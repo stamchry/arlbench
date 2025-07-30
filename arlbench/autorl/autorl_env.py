@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Dict
 
 import gymnasium
 import jax
 import numpy as np
 import pandas as pd
+from omegaconf import OmegaConf
 from ConfigSpace import Configuration, ConfigurationSpace
 
 from arlbench.core.algorithms import (
@@ -265,6 +266,37 @@ class AutoRLEnv(gymnasium.Env):
             cnn_policy=self._config["cnn_policy"],
             deterministic_eval=self._config["deterministic_eval"],
         )
+    
+    def get_algorithm_init_kwargs(self, init_rng) -> Dict:
+        """Returns the algorithm initialization parameters.
+
+        Returns:
+            Dict: Dictionary of algorithm initialization parameters.
+        """
+        if isinstance(self._algorithm, PPO):
+            return {"rng": init_rng, "network_params": self._algorithm_state.runner_state.train_state.params, "opt_state": self._algorithm_state.runner_state.train_state.opt_state}
+        elif isinstance(self._algorithm, DQN):
+            return{
+                    "rng": init_rng,
+                    "buffer_state": self._algorithm_state.buffer_state,
+                    "network_params": self._algorithm_state.runner_state.train_state.params,
+                    "target_params": self._algorithm_state.runner_state.train_state.target_params,
+                    "opt_state": self._algorithm_state.runner_state.train_state.opt_state,
+                }
+        elif isinstance(self._algorithm, SAC):
+            return {
+                    "rng": init_rng,
+                    "buffer_state": self._algorithm_state.buffer_state,
+                    "actor_network_params": self._algorithm_state.runner_state.actor_train_state.params,
+                    "critic_network_params": self._algorithm_state.runner_state.critic_train_state.params,
+                    "critic_target_params": self._algorithm_state.runner_state.critic_train_state.target_params,
+                    "alpha_network_params": self._algorithm_state.runner_state.alpha_train_state.params,
+                    "actor_opt_state": self._algorithm_state.runner_state.actor_train_state.opt_state,
+                    "critic_opt_state": self._algorithm_state.runner_state.critic_train_state.opt_state,
+                    "alpha_opt_state": self._algorithm_state.runner_state.alpha_train_state.opt_state,
+                }
+        else:
+            raise ValueError(f"Unsupported algorithm: {self._algorithm.name}")
 
     def step(
         self,
@@ -304,7 +336,9 @@ class AutoRLEnv(gymnasium.Env):
 
         # Apply changes to current hyperparameter configuration and reinstantiate algorithm
         if isinstance(action, dict):
-            action = Configuration(self.config_space, action)
+            action_config = dict(self._hpo_config)
+            action_config.update(action)
+            action = Configuration(self.config_space, action_config)
         self._hpo_config = action
 
         seed = seed if seed else self._seed
@@ -325,6 +359,10 @@ class AutoRLEnv(gymnasium.Env):
         elif self._algorithm_state is None:
             init_rng = jax.random.key(seed)
             self._algorithm_state = self._algorithm.init(init_rng)
+        else:
+            init_rng = jax.random.key(seed)
+            init_kwargs = self.get_algorithm_init_kwargs(init_rng)            
+            self._algorithm_state = self._algorithm.init(**init_kwargs)
 
         # Training kwargs
         train_kw_args = {

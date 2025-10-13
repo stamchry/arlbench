@@ -47,7 +47,4 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
     # Additionally, we store the evaluation rewards we had during training
     info["train_info_df"].to_csv("evaluation.csv", index=False)
 
-    if len(objectives) == 1:
-        return objectives[next(iter(objectives.keys()))]
-    else:
-        return tuple(objectives.values())
+    return objectives

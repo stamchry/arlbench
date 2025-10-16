@@ -18,6 +18,14 @@ if TYPE_CHECKING:
 # the training to make it as accurate as possible. For the emissions, we want to have
 # only the training emissions and not the calculation of other objectives
 
+def discount_rewards(rewards, gamma=0.99):
+    """Compute discounted rewards."""
+    discounted = np.zeros_like(rewards, dtype=np.float32)
+    running_add = 0
+    for t in reversed(range(len(rewards))):
+        running_add = running_add * gamma + rewards[t]
+        discounted[t] = running_add
+    return discounted
 
 class Objective(ABC):
     """An abstract optimization objective for the AutoRL environment.
@@ -146,6 +154,50 @@ class RewardMean(Objective):
             "optimize": "upper",
         }
 
+class DiscountedRewardMean(Objective):
+    """Discounted reward objective for the AutoRL environment. It measures the mean of the last discounted evaluation rewards."""
+
+    KEY = "discounted_reward_mean"
+    RANK = 2
+    gamma: float = 0.99
+
+    @staticmethod
+    def __call__(
+        train_func: TrainFunc, objectives: dict, optimize_objectives: str
+    ) -> TrainFunc:
+        """Wraps the training function with the reward mean calculation."""
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+            _, train_result = result
+            # Content: [[step1_rewards], [step1_rewards+step2_rewards], ..., [sum(step1...stepN_rewards)]]
+            cumulative_eval_reward = train_result.eval_rewards
+            rewards = []
+            for i in range(1, len(cumulative_eval_reward)):
+                rewards.append(cumulative_eval_reward[i] - cumulative_eval_reward[i-1])
+            rewards = np.array(rewards)
+            rewards = discount_rewards(rewards, gamma=DiscountedRewardMean.gamma)
+            reward_mean = np.mean(np.sum(rewards, axis=1))
+
+            # Naturally the mean of the reward is maximized. However, if we don't want
+            # to maximize the objectives we have to flip the sign
+            if optimize_objectives != RewardMean.get_spec()["optimize"]:
+                reward_mean *= -1
+
+            objectives[RewardMean.KEY] = reward_mean
+            return result
+
+        return wrapper
+
+    @staticmethod
+    def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
+        return {
+            "name": RewardMean.KEY,
+            "upper": None,
+            "lower": None,
+            "optimize": "upper",
+        }
+
 
 class RewardStd(Objective):
     """Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards."""
@@ -180,7 +232,7 @@ class RewardStd(Objective):
         return {"name": RewardStd.KEY, "upper": None, "lower": 0, "optimize": "lower"}
 
 class TrainRewardMean(Objective):
-    """Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards."""
+    """Reward objective for the AutoRL environment. It measures the mean of the last training rewards."""
 
     KEY = "train_reward_mean"
     RANK = 2
@@ -193,10 +245,11 @@ class TrainRewardMean(Objective):
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             _, train_result = result
-            train_rewards = np.reshape(train_result.trajectories.reward, (-1,8))
-            train_dones = np.reshape(train_result.trajectories.done, (-1,8))
+            n_envs = train_result.trajectories.reward.shape[-1]
+            train_rewards = np.reshape(train_result.trajectories.reward, (-1,n_envs))
+            train_dones = np.reshape(train_result.trajectories.done, (-1,n_envs))
             rewards = []
-            for i in range(8):
+            for i in range(n_envs):
                 episode_end_indices = np.where(train_dones[:, i])[0]
                 last_indices = episode_end_indices[-3:]
                 previous_indices = episode_end_indices[-4:-1]
@@ -225,6 +278,55 @@ class TrainRewardMean(Objective):
             "optimize": "upper",
         }
     
+class DiscountedTrainRewardMean(Objective):
+    """Discounted reward objective for the AutoRL environment. It measures the mean of the last discounted training rewards."""
+
+    KEY = "discounted_train_reward_mean"
+    RANK = 2
+    gamma: float = 0.99
+
+    @staticmethod
+    def __call__(
+        train_func: TrainFunc, objectives: dict, optimize_objectives: str
+    ) -> TrainFunc:
+        """Wraps the training function with the reward mean calculation."""
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+            _, train_result = result
+            n_envs = train_result.trajectories.reward.shape[-1]
+            train_rewards = np.reshape(train_result.trajectories.reward, (-1,n_envs))
+            train_dones = np.reshape(train_result.trajectories.done, (-1,n_envs))
+            rewards = []
+            for i in range(n_envs):
+                episode_end_indices = np.where(train_dones[:, i])[0]
+                last_indices = episode_end_indices[-3:]
+                previous_indices = episode_end_indices[-4:-1]
+                for start, end in zip(previous_indices, last_indices):
+                    episode_reward = train_rewards[start+1:end, i]
+                    episode_reward = discount_rewards(episode_reward, DiscountedTrainRewardMean.gamma)
+                    rewards.append(sum(episode_reward))
+
+            reward_mean = np.mean(rewards)
+            # Naturally the mean of the reward is maximized. However, if we don't want
+            # to maximize the objectives we have to flip the sign
+            if optimize_objectives != TrainRewardMean.get_spec()["optimize"]:
+                reward_mean *= -1
+
+            objectives[TrainRewardMean.KEY] = reward_mean
+            return result
+
+        return wrapper
+    
+    @staticmethod
+    def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
+        return {
+            "name": DiscountedTrainRewardMean.KEY,
+            "upper": None,
+            "lower": None,
+            "optimize": "upper",
+        }
+    
 class TrainRewardStd(Objective):
     """Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards."""
 
@@ -239,10 +341,11 @@ class TrainRewardStd(Objective):
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             _, train_result = result
-            train_rewards = np.reshape(train_result.trajectories.reward, (-1,8))
-            train_dones = np.reshape(train_result.trajectories.done, (-1,8))
+            n_envs = train_result.trajectories.reward.shape[-1]
+            train_rewards = np.reshape(train_result.trajectories.reward, (-1,n_envs))
+            train_dones = np.reshape(train_result.trajectories.done, (-1,n_envs))
             stds = []
-            for i in range(8):
+            for i in range(n_envs):
                 episode_end_indices = np.where(train_dones[:, i])[0]
                 last_indices = episode_end_indices[-3:]
                 previous_indices = episode_end_indices[-4:-1]
@@ -309,4 +412,4 @@ class Emissions(Objective):
         return {"name": "emissions", "upper": None, "lower": 0.0, "optimize": "lower"}
 
 
-OBJECTIVES = {o.KEY: (o, o.RANK) for o in [Runtime, RewardMean, RewardStd, Emissions, TrainRewardMean, TrainRewardStd]}
+OBJECTIVES = {o.KEY: (o, o.RANK) for o in [Runtime, RewardMean, DiscountedRewardMean, RewardStd, Emissions, TrainRewardMean, TrainRewardStd, DiscountedTrainRewardMean]}

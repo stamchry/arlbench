@@ -179,6 +179,94 @@ class RewardStd(Objective):
         """Returns a dictionary containing the specification of the objective."""
         return {"name": RewardStd.KEY, "upper": None, "lower": 0, "optimize": "lower"}
 
+class TrainRewardMean(Objective):
+    """Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards."""
+
+    KEY = "train_reward_mean"
+    RANK = 2
+
+    @staticmethod
+    def __call__(
+        train_func: TrainFunc, objectives: dict, optimize_objectives: str
+    ) -> TrainFunc:
+        """Wraps the training function with the reward mean calculation."""
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+            _, train_result = result
+            train_rewards = np.reshape(train_result.trajectories.reward, (-1,8))
+            train_dones = np.reshape(train_result.trajectories.done, (-1,8))
+            rewards = []
+            for i in range(8):
+                episode_end_indices = np.where(train_dones[:, i])[0]
+                last_indices = episode_end_indices[-3:]
+                previous_indices = episode_end_indices[-4:-1]
+                for start, end in zip(previous_indices, last_indices):
+                    episode_reward = train_rewards[start+1:end, i]
+                    rewards.append(sum(episode_reward))
+
+            reward_mean = np.mean(rewards)
+            # Naturally the mean of the reward is maximized. However, if we don't want
+            # to maximize the objectives we have to flip the sign
+            if optimize_objectives != TrainRewardMean.get_spec()["optimize"]:
+                reward_mean *= -1
+
+            objectives[TrainRewardMean.KEY] = reward_mean
+            return result
+
+        return wrapper
+
+    @staticmethod
+    def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
+        return {
+            "name": TrainRewardMean.KEY,
+            "upper": None,
+            "lower": None,
+            "optimize": "upper",
+        }
+    
+class TrainRewardStd(Objective):
+    """Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards."""
+
+    KEY = "train_reward_std"
+    RANK = 2
+
+    @staticmethod
+    def __call__(
+        train_func: TrainFunc, objectives: dict, optimize_objectives: str
+    ) -> TrainFunc:
+        """Wraps the training function with the reward standard deviation calculation."""
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+            _, train_result = result
+            train_rewards = np.reshape(train_result.trajectories.reward, (-1,8))
+            train_dones = np.reshape(train_result.trajectories.done, (-1,8))
+            stds = []
+            for i in range(8):
+                episode_end_indices = np.where(train_dones[:, i])[0]
+                last_indices = episode_end_indices[-3:]
+                previous_indices = episode_end_indices[-4:-1]
+                for start, end in zip(previous_indices, last_indices):
+                    episode_reward = train_rewards[start+1:end, i]
+                    stds.append(np.std(episode_reward))
+
+            reward_std = np.mean(stds)
+
+            # Naturally the std of the reward is minimized. However, if we don't want
+            # to minimize objectives we have to flip the sign
+            if optimize_objectives != TrainRewardStd.get_spec()["optimize"]:
+                reward_std *= -1
+
+            objectives[TrainRewardStd.KEY] = reward_std
+
+            return result
+
+        return wrapper
+
+    @staticmethod
+    def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
+        return {"name": TrainRewardStd.KEY, "upper": None, "lower": 0, "optimize": "lower"}
 
 class Emissions(Objective):
     """Emissions objective for the AutoRL environment. It measures the emissions during the training using code carbon."""
@@ -221,4 +309,4 @@ class Emissions(Objective):
         return {"name": "emissions", "upper": None, "lower": 0.0, "optimize": "lower"}
 
 
-OBJECTIVES = {o.KEY: (o, o.RANK) for o in [Runtime, RewardMean, RewardStd, Emissions]}
+OBJECTIVES = {o.KEY: (o, o.RANK) for o in [Runtime, RewardMean, RewardStd, Emissions, TrainRewardMean, TrainRewardStd]}

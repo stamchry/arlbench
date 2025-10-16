@@ -19,6 +19,7 @@ from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
 from optax import EmptyState, ScaleByAdamState
+from omegaconf import OmegaConf, DictConfig, ListConfig
 
 from arlbench.core.algorithms import DQN, PPO, SAC
 from arlbench.core.algorithms.dqn import DQNRunnerState, DQNTrainingResult
@@ -154,6 +155,9 @@ class Checkpointer:
             )
 
         # First, we store the basic information of the AutoRL environment
+        for k in autorl_config:
+            if isinstance(autorl_config[k], DictConfig) or isinstance(autorl_config[k], ListConfig):
+                autorl_config[k] = OmegaConf.to_container(autorl_config[k], resolve=True)
         ckpt: dict[str, Any] = {
             "autorl_config": autorl_config,
             "hp_config": dict(hp_config),

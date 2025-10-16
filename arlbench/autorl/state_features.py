@@ -102,6 +102,135 @@ class GradInfo(StateFeature):
         return gymnasium.spaces.Box(
             low=np.array([-np.inf, 0]), high=np.array([np.inf, np.inf])
         )
+    
+class LossInfo(StateFeature):
+    """Loss information state feature for the AutoRL environment. It contains the grad norm during training."""
 
+    KEY = "loss_info"
 
-STATE_FEATURES = {o.KEY: o for o in [GradInfo]}
+    @staticmethod
+    def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
+        """Wraps the training function with the gradient information calculation."""
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+
+            _, train_result = result
+            metrics = train_result.metrics
+
+            if metrics is None:
+                raise ValueError(
+                    "Metrics in train_result are None. Can't compute gradient info without gradients."
+                )
+
+            loss_info = metrics.loss
+            loss_mean = np.mean(loss_info)
+            loss_var = np.mean(loss_info)
+
+            state_features[LossInfo.KEY] = np.array([loss_mean, loss_var])
+
+            return result
+
+        return wrapper
+
+    @staticmethod
+    def get_state_space() -> gymnasium.spaces.Space:
+        """Returns state space."""
+        return gymnasium.spaces.Box(
+            low=np.array([-np.inf, -np.inf]), high=np.array([np.inf, np.inf])
+        )
+    
+
+class WeightInfo(StateFeature):
+    """Weight information state feature for the AutoRL environment. It contains the grad norm during training."""
+
+    KEY = "weight_info"
+
+    @staticmethod
+    def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
+        """Wraps the training function with the gradient information calculation."""
+        def wrapper(*args, **kwargs):
+            def get_stats(params):
+                weights = [v["kernel"].flatten() for (k, v) in params.items() if isinstance(v, dict)]
+                biases = [v["bias"].flatten() for (k, v) in params.items() if isinstance(v, dict)]
+                weights = jnp.concatenate((weights))
+                biases = jnp.concatenate((biases))
+                    
+                w_mean = jnp.mean(weights)
+                w_var = jnp.var(weights)
+                w_median = jnp.median(weights)
+                b_mean = jnp.mean(biases)
+                b_var = jnp.var(biases) 
+                b_median = jnp.median(biases)
+                return np.array(
+                        [w_mean, w_var, w_median, b_mean, b_var, b_median]
+                    )
+            result = train_func(*args, **kwargs)
+
+            algo_state, metrics = result
+            params = algo_state.runner_state.train_state.params["params"]
+            params_stats = get_stats(params)
+
+            # TOOD: get stats for SAC
+            if isinstance(metrics.metrics, DQNMetrics):
+                target_params = algo_state.runner_state.train_state.target_params["params"]
+                target_params_stats = get_stats(target_params)
+                params_stats = np.concatenate((params_stats, target_params_stats))
+            elif isinstance(metrics.metrics, SACMetrics):
+                grad_info = metrics.actor_grads["params"]
+            else:
+                params_stats = np.concatenate(
+                    (params_stats, np.zeros(6))
+                )
+
+            state_features[WeightInfo.KEY] = params_stats
+
+            return result
+
+        return wrapper
+
+    @staticmethod
+    def get_state_space() -> gymnasium.spaces.Space:
+        """Returns state space."""
+        return gymnasium.spaces.Box(
+            low=np.ones(12)*-np.inf, high=np.ones(12)*np.inf)
+
+class PredictionInfo(StateFeature):
+    """Prediction information state feature for the AutoRL environment. It contains the grad norm during training."""
+
+    KEY = "prediction_info"
+
+    @staticmethod
+    def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
+        """Wraps the training function with the gradient information calculation."""
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+
+            _, train_result = result
+            trajectory = train_result.trajectories
+            if isinstance(train_result.metrics, DQNMetrics):
+                td_error = train_result.metrics.td_error
+                value_mean = jnp.mean(td_error)
+                value_var = jnp.var(td_error)
+                log_probs_mean = 0
+                log_probs_var = 0
+            elif isinstance(train_result.metrics, PPOMetrics):
+                log_probs = trajectory.log_probs
+                value = train_result.value
+                value_mean = jnp.mean(value)
+                value_var = jnp.var(value)
+                log_probs_mean = jnp.mean(log_probs)
+                log_probs_var = jnp.var(log_probs)
+
+            state_features[PredictionInfo.KEY] = np.array([value_mean, value_var, log_probs_mean, log_probs_var])
+
+            return result
+
+        return wrapper
+
+    @staticmethod
+    def get_state_space() -> gymnasium.spaces.Space:
+        """Returns state space."""
+        return gymnasium.spaces.Box(
+            low=np.ones(4)*-np.inf, high=np.ones(4)*np.inf)
+
+STATE_FEATURES = {o.KEY: o for o in [GradInfo, LossInfo, WeightInfo, PredictionInfo]}

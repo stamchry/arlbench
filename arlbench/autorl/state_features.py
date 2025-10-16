@@ -104,7 +104,7 @@ class GradInfo(StateFeature):
         )
     
 class LossInfo(StateFeature):
-    """Loss information state feature for the AutoRL environment. It contains the grad norm during training."""
+    """Loss information state feature for the AutoRL environment. It contains the loss mean and variance."""
 
     KEY = "loss_info"
 
@@ -141,7 +141,7 @@ class LossInfo(StateFeature):
     
 
 class WeightInfo(StateFeature):
-    """Weight information state feature for the AutoRL environment. It contains the grad norm during training."""
+    """Weight information state feature for the AutoRL environment. It contains statistics about the weights during training."""
 
     KEY = "weight_info"
 
@@ -170,18 +170,20 @@ class WeightInfo(StateFeature):
             params = algo_state.runner_state.train_state.params["params"]
             params_stats = get_stats(params)
 
-            # TOOD: get stats for SAC
-            if isinstance(metrics.metrics, DQNMetrics):
+            if isinstance(metrics.metrics, DQNMetrics) and hasattr(algo_state.runner_state.train_state, "target_params"):
                 target_params = algo_state.runner_state.train_state.target_params["params"]
                 target_params_stats = get_stats(target_params)
                 params_stats = np.concatenate((params_stats, target_params_stats))
             elif isinstance(metrics.metrics, SACMetrics):
-                grad_info = metrics.actor_grads["params"]
-            else:
-                params_stats = np.concatenate(
-                    (params_stats, np.zeros(6))
-                )
-
+                for state in ["actor_train_state", "critic_train_state", "alpha_train_state"]:
+                    if hasattr(algo_state.runner_state, state):
+                        state_params = getattr(algo_state.runner_state, state)["params"]
+                        state_params_stats = get_stats(state_params)
+                        params_stats = np.concatenate((params_stats, state_params_stats))
+                        if hasattr(getattr(algo_state.runner_state, state), "target_params"):
+                            target_state_params = getattr(algo_state.runner_state, state).target_params["params"]
+                            target_state_params_stats = get_stats(target_state_params)
+                            params_stats = np.concatenate((params_stats, target_state_params_stats))
             state_features[WeightInfo.KEY] = params_stats
 
             return result
@@ -191,11 +193,13 @@ class WeightInfo(StateFeature):
     @staticmethod
     def get_state_space() -> gymnasium.spaces.Space:
         """Returns state space."""
+        # FIXME: This is technically not correct, but we don't know the exact size beforehand.
+        # We could in principle pad this, but e.g. SAC is 4x larger than PPO, so that's also not ideal.
         return gymnasium.spaces.Box(
-            low=np.ones(12)*-np.inf, high=np.ones(12)*np.inf)
+            low=np.ones(6)*-np.inf, high=np.ones(6)*np.inf)
 
 class PredictionInfo(StateFeature):
-    """Prediction information state feature for the AutoRL environment. It contains the grad norm during training."""
+    """Prediction information state feature for the AutoRL environment. It contains the predicted values and log probs."""
 
     KEY = "prediction_info"
 

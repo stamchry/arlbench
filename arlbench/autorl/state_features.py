@@ -167,6 +167,7 @@ class WeightInfo(StateFeature):
             result = train_func(*args, **kwargs)
 
             algo_state, metrics = result
+            params_stats = None
 
             # SAC uses a different runner structure
             if isinstance(metrics.metrics, SACMetrics):
@@ -177,7 +178,10 @@ class WeightInfo(StateFeature):
                             "Weights are None. Please ensure weights are included in the checkpoint argument."
                         )
                     state_params_stats = get_stats(state_params)
-                    params_stats = np.concatenate((params_stats, state_params_stats))
+                    if params_stats is None:
+                        params_stats = state_params_stats
+                    else:
+                        params_stats = np.concatenate((params_stats, state_params_stats))
                     if hasattr(getattr(algo_state.runner_state, state), "target_params"):
                         target_state_params = getattr(algo_state.runner_state, state).target_params["params"]
                         target_state_params_stats = get_stats(target_state_params)
@@ -199,7 +203,7 @@ class WeightInfo(StateFeature):
                         params_stats = np.concatenate((params_stats, target_params_stats))
                     else:
                         params_stats = np.concatenate((params_stats, np.zeros(6)))
-                
+
             state_features[WeightInfo.KEY] = params_stats
 
             return result

@@ -130,6 +130,7 @@ class AutoRLEnv(gymnasium.Env):
             "all" in self._config["checkpoint"]
             or "trajectories" in self._config["checkpoint"]
             or "prediction_info" in self._config["state_features"]
+            or any(["train_reward" in o for o in self._config["objectives"]])
         )
 
         # Algorithm
@@ -166,14 +167,30 @@ class AutoRLEnv(gymnasium.Env):
         objective_arguments = []
         cfg_objectives = list(set(self._config["objectives"]))
         for o in cfg_objectives:
-            # If o ends with number, parse it
-            if o[-1].isdigit():
-                base_o = [ro for ro in OBJECTIVES if o.startswith(ro)]
-                argument = "".join(o[len(base_o[0]):].split("_")[:-1])
-                value = float(o.split("_")[-1])
+            if o not in OBJECTIVES and ("_".join(o.split("_")[:1]) in OBJECTIVES or "_".join(o.split("_")[:2]) in OBJECTIVES or "_".join(o.split("_")[:3]) in OBJECTIVES):
+                if "_".join(o.split("_")[:3]) in OBJECTIVES:
+                    base_o = "_".join(o.split("_")[:3])
+                    args = o.split("_")[3:]
+                elif "_".join(o.split("_")[:2]) in OBJECTIVES:
+                    base_o = "_".join(o.split("_")[:2])
+                    args = o.split("_")[2:]
+                else:
+                    base_o = "_".join(o.split("_")[:1])
+                    args = o.split("_")[1:]
+                o = base_o
+                arg_dict = {}
 
-                objectives += [OBJECTIVES[base_o[0]]]
-                objective_arguments.append({argument: value})
+                # We assume that the default argument is always the first one
+                if len(args) % 2 != 0:
+                    arg_dict["default_arg"] = args[0]
+                    args = args[1:]
+
+                for i in range(0, len(args), 2):
+                    arg_dict[args[i]] = float(args[i + 1])
+
+                objectives += [OBJECTIVES[o]]
+                objective_arguments.append(arg_dict)
+
             elif o not in OBJECTIVES:
                 raise ValueError(f"Invalid objective: {o}")
             else:

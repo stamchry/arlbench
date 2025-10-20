@@ -122,12 +122,14 @@ class AutoRLEnv(gymnasium.Env):
         self._checkpoints = []
         self._track_metrics = (
             "all" in self._config["checkpoint"]
-            or "grad_info" in self._config["state_features"]
             or "loss" in self._config["checkpoint"]
+            or "grad_info" in self._config["state_features"]
+            or "loss_info" in self._config["state_features"]
         )
         self._track_trajectories = (
             "all" in self._config["checkpoint"]
             or "trajectories" in self._config["checkpoint"]
+            or "prediction_info" in self._config["state_features"]
         )
 
         # Algorithm

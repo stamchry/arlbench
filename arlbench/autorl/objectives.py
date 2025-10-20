@@ -139,7 +139,7 @@ class RewardMean(Objective):
             if optimize_objectives != RewardMean.get_spec()["optimize"]:
                 reward_mean *= -1
 
-            objectives[RewardMean.KEY] = reward_mean
+            objectives[RewardMean.KEY] = reward_mean.item()
             return result
 
         return wrapper
@@ -159,11 +159,10 @@ class DiscountedRewardMean(Objective):
 
     KEY = "discounted_reward_mean"
     RANK = 2
-    gamma: float = 0.99
 
     @staticmethod
     def __call__(
-        train_func: TrainFunc, objectives: dict, optimize_objectives: str
+        train_func: TrainFunc, objectives: dict, optimize_objectives: str, gamma: float = 0.99
     ) -> TrainFunc:
         """Wraps the training function with the reward mean calculation."""
         def wrapper(*args, **kwargs):
@@ -175,15 +174,15 @@ class DiscountedRewardMean(Objective):
             for i in range(1, len(cumulative_eval_reward)):
                 rewards.append(cumulative_eval_reward[i] - cumulative_eval_reward[i-1])
             rewards = np.array(rewards)
-            rewards = discount_rewards(rewards, gamma=DiscountedRewardMean.gamma)
+            rewards = discount_rewards(rewards, gamma=gamma)
             reward_mean = np.mean(np.sum(rewards, axis=1))
 
             # Naturally the mean of the reward is maximized. However, if we don't want
             # to maximize the objectives we have to flip the sign
-            if optimize_objectives != RewardMean.get_spec()["optimize"]:
+            if optimize_objectives != DiscountedRewardMean.get_spec()["optimize"]:
                 reward_mean *= -1
 
-            objectives[RewardMean.KEY] = reward_mean
+            objectives[DiscountedRewardMean.KEY] = reward_mean.item()
             return result
 
         return wrapper
@@ -263,7 +262,7 @@ class TrainRewardMean(Objective):
             if optimize_objectives != TrainRewardMean.get_spec()["optimize"]:
                 reward_mean *= -1
 
-            objectives[TrainRewardMean.KEY] = reward_mean
+            objectives[TrainRewardMean.KEY] = reward_mean.item()
             return result
 
         return wrapper
@@ -283,11 +282,10 @@ class DiscountedTrainRewardMean(Objective):
 
     KEY = "discounted_train_reward_mean"
     RANK = 2
-    gamma: float = 0.99
 
     @staticmethod
     def __call__(
-        train_func: TrainFunc, objectives: dict, optimize_objectives: str
+        train_func: TrainFunc, objectives: dict, optimize_objectives: str, gamma: float = 0.99
     ) -> TrainFunc:
         """Wraps the training function with the reward mean calculation."""
         def wrapper(*args, **kwargs):
@@ -303,16 +301,16 @@ class DiscountedTrainRewardMean(Objective):
                 previous_indices = episode_end_indices[-4:-1]
                 for start, end in zip(previous_indices, last_indices, strict=False):
                     episode_reward = train_rewards[start+1:end, i]
-                    episode_reward = discount_rewards(episode_reward, DiscountedTrainRewardMean.gamma)
+                    episode_reward = discount_rewards(episode_reward, gamma)
                     rewards.append(sum(episode_reward))
 
             reward_mean = np.mean(rewards)
             # Naturally the mean of the reward is maximized. However, if we don't want
             # to maximize the objectives we have to flip the sign
-            if optimize_objectives != TrainRewardMean.get_spec()["optimize"]:
+            if optimize_objectives != DiscountedTrainRewardMean.get_spec()["optimize"]:
                 reward_mean *= -1
 
-            objectives[TrainRewardMean.KEY] = reward_mean
+            objectives[DiscountedTrainRewardMean.KEY] = reward_mean.item()
             return result
 
         return wrapper

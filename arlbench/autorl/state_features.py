@@ -8,7 +8,7 @@ import gymnasium
 import jax.numpy as jnp
 import numpy as np
 
-from arlbench.core.algorithms import DQNMetrics, PPOMetrics, SACMetrics
+from arlbench.core.algorithms import Algorithm, DQNMetrics, PPOMetrics, SACMetrics
 
 if TYPE_CHECKING:
     from arlbench.core.algorithms import TrainFunc
@@ -50,7 +50,7 @@ class StateFeature(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_state_space() -> gymnasium.spaces.Space:
+    def get_state_space(algorithm: Algorithm) -> gymnasium.spaces.Space:
         """Returns a dictionary containing the specification of the state feature.
 
         Returns:
@@ -97,7 +97,7 @@ class GradInfo(StateFeature):
         return wrapper
 
     @staticmethod
-    def get_state_space() -> gymnasium.spaces.Space:
+    def get_state_space(_) -> gymnasium.spaces.Space:
         """Returns state space."""
         return gymnasium.spaces.Box(
             low=np.array([-np.inf, 0]), high=np.array([np.inf, np.inf])
@@ -110,16 +110,16 @@ class LossInfo(StateFeature):
 
     @staticmethod
     def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
-        """Wraps the training function with the gradient information calculation."""
+        """Wraps the training function with the loss information calculation."""
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
 
             _, train_result = result
             metrics = train_result.metrics
 
-            if metrics is None:
+            if metrics.loss is None:
                 raise ValueError(
-                    "Metrics in train_result are None. Can't compute gradient info without gradients."
+                    "Loss in train_result is None. Please ensure loss is included in the checkpoint argument."
                 )
 
             loss_info = metrics.loss
@@ -133,7 +133,7 @@ class LossInfo(StateFeature):
         return wrapper
 
     @staticmethod
-    def get_state_space() -> gymnasium.spaces.Space:
+    def get_state_space(_) -> gymnasium.spaces.Space:
         """Returns state space."""
         return gymnasium.spaces.Box(
             low=np.array([-np.inf, -np.inf]), high=np.array([np.inf, np.inf])
@@ -167,23 +167,39 @@ class WeightInfo(StateFeature):
             result = train_func(*args, **kwargs)
 
             algo_state, metrics = result
-            params = algo_state.runner_state.train_state.params["params"]
-            params_stats = get_stats(params)
 
-            if isinstance(metrics.metrics, DQNMetrics) and hasattr(algo_state.runner_state.train_state, "target_params"):
-                target_params = algo_state.runner_state.train_state.target_params["params"]
-                target_params_stats = get_stats(target_params)
-                params_stats = np.concatenate((params_stats, target_params_stats))
-            elif isinstance(metrics.metrics, SACMetrics):
+            # SAC uses a different runner structure
+            if isinstance(metrics.metrics, SACMetrics):
                 for state in ["actor_train_state", "critic_train_state", "alpha_train_state"]:
-                    if hasattr(algo_state.runner_state, state):
-                        state_params = getattr(algo_state.runner_state, state)["params"]
-                        state_params_stats = get_stats(state_params)
-                        params_stats = np.concatenate((params_stats, state_params_stats))
-                        if hasattr(getattr(algo_state.runner_state, state), "target_params"):
-                            target_state_params = getattr(algo_state.runner_state, state).target_params["params"]
-                            target_state_params_stats = get_stats(target_state_params)
-                            params_stats = np.concatenate((params_stats, target_state_params_stats))
+                    state_params = getattr(algo_state.runner_state, state)["params"]
+                    if state_params is None:
+                        raise ValueError(
+                            "Weights are None. Please ensure weights are included in the checkpoint argument."
+                        )
+                    state_params_stats = get_stats(state_params)
+                    params_stats = np.concatenate((params_stats, state_params_stats))
+                    if hasattr(getattr(algo_state.runner_state, state), "target_params"):
+                        target_state_params = getattr(algo_state.runner_state, state).target_params["params"]
+                        target_state_params_stats = get_stats(target_state_params)
+                        params_stats = np.concatenate((params_stats, target_state_params_stats))
+                    else:
+                        params_stats = np.concatenate((params_stats, np.zeros(6)))
+            else:
+                params = algo_state.runner_state.train_state.params["params"]
+                if params is None:
+                    raise ValueError(
+                        "Weights are None. Please ensure weights are included in the checkpoint argument."
+                    )
+                params_stats = get_stats(params)
+
+                if isinstance(metrics.metrics, DQNMetrics):
+                    if hasattr(algo_state.runner_state.train_state, "target_params"):
+                        target_params = algo_state.runner_state.train_state.target_params["params"]
+                        target_params_stats = get_stats(target_params)
+                        params_stats = np.concatenate((params_stats, target_params_stats))
+                    else:
+                        params_stats = np.concatenate((params_stats, np.zeros(6)))
+                
             state_features[WeightInfo.KEY] = params_stats
 
             return result
@@ -191,12 +207,17 @@ class WeightInfo(StateFeature):
         return wrapper
 
     @staticmethod
-    def get_state_space() -> gymnasium.spaces.Space:
+    def get_state_space(algorithm: Algorithm) -> gymnasium.spaces.Space:
         """Returns state space."""
-        # FIXME: This is technically not correct, but we don't know the exact size beforehand.
-        # We could in principle pad this, but e.g. SAC is 4x larger than PPO, so that's also not ideal.
-        return gymnasium.spaces.Box(
-            low=np.ones(6)*-np.inf, high=np.ones(6)*np.inf)
+        if algorithm == "ppo":
+            return gymnasium.spaces.Box(
+                low=np.ones(6)*-np.inf, high=np.ones(6)*np.inf)
+        elif algorithm == "dqn":
+            return gymnasium.spaces.Box(
+                low=np.ones(12)*-np.inf, high=np.ones(12)*np.inf)
+        else:  # sac
+            return gymnasium.spaces.Box(
+                low=np.ones(36)*-np.inf, high=np.ones(36)*np.inf)
 
 class PredictionInfo(StateFeature):
     """Prediction information state feature for the AutoRL environment. It contains the predicted values and log probs."""
@@ -205,36 +226,42 @@ class PredictionInfo(StateFeature):
 
     @staticmethod
     def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
-        """Wraps the training function with the gradient information calculation."""
+        """Wraps the training function with the prediction information calculation."""
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
 
             _, train_result = result
             trajectory = train_result.trajectories
-            if isinstance(train_result.metrics, DQNMetrics):
-                td_error = train_result.metrics.td_error
-                value_mean = jnp.mean(td_error)
-                value_var = jnp.var(td_error)
-                log_probs_mean = 0
-                log_probs_var = 0
-            elif isinstance(train_result.metrics, PPOMetrics):
+            if trajectory is None:
+                raise ValueError(
+                    "Trajectories are None. Can't compute prediction info without trajectories. Please ensure trajectories are included in the checkpoint argument."
+                )
+
+            if isinstance(train_result.metrics, PPOMetrics):
                 log_probs = trajectory.log_probs
                 value = train_result.value
                 value_mean = jnp.mean(value)
                 value_var = jnp.var(value)
                 log_probs_mean = jnp.mean(log_probs)
                 log_probs_var = jnp.var(log_probs)
-
-            state_features[PredictionInfo.KEY] = np.array([value_mean, value_var, log_probs_mean, log_probs_var])
-
+                state_features[PredictionInfo.KEY] = np.array([value_mean, value_var, log_probs_mean, log_probs_var])
+            else:
+                td_error = train_result.metrics.td_error
+                value_mean = jnp.mean(td_error)
+                value_var = jnp.var(td_error)
+                state_features[PredictionInfo.KEY] = np.array([value_mean, value_var])
             return result
 
         return wrapper
 
     @staticmethod
-    def get_state_space() -> gymnasium.spaces.Space:
+    def get_state_space(algorithm: Algorithm) -> gymnasium.spaces.Space:
         """Returns state space."""
-        return gymnasium.spaces.Box(
-            low=np.ones(4)*-np.inf, high=np.ones(4)*np.inf)
+        if algorithm == "ppo":
+            return gymnasium.spaces.Box(
+                low=np.ones(4)*-np.inf, high=np.ones(4)*np.inf)
+        else:
+            return gymnasium.spaces.Box(
+                low=np.ones(2)*-np.inf, high=np.ones(2)*np.inf)
 
 STATE_FEATURES = {o.KEY: o for o in [GradInfo, LossInfo, WeightInfo, PredictionInfo]}

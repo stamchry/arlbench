@@ -207,7 +207,7 @@ class AutoRLEnv(gymnasium.Env):
         Returns:
             gymnasium.spaces.Dict: Gymnasium space.
         """
-        obs_space = {f.KEY: f.get_state_space() for f in self._state_features}
+        obs_space = {f.KEY: f.get_state_space(self._config["algorithm"]) for f in self._state_features}
 
         obs_space["steps"] = gymnasium.spaces.Box(
             low=np.array([0, 0]), high=np.array([np.inf, np.inf])

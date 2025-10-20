@@ -23,15 +23,9 @@ dependencies = [
   "chex==0.1.86",
   "xminigrid==0.8.0",
   "gymnasium==1.2.0",
-  "ruff",
-  "hydra-core",
+  "hydra-core==1.3.2",
   "hydra-submitit-launcher",
   "hydra_colorlog",
-  "mypy",
-  "tox",
-  "twine",
-  "bump-my-version",
-  
 ]
 
 requires-python = ">=3.10"
@@ -52,13 +46,12 @@ classifiers = [
 license = { file = "LICENSE" }
 
 [project.optional-dependencies]
-dev = ["ARLBench[doc, tooling, test, examples]"]
-tooling = ["commitizen", "pre-commit", "ruff"]
+dev = ["ARLBench[doc, test, examples]", "ruff==0.4.0", "pre-commit==3.7.0", "bump-my-version==0.20.1", "twine==5.0.0",  "mypy==1.9.0"]
 
-test = ["pytest", "pytest-coverage", "pytest-cases", "ARLBench[examples]"]
-examples = ["hypersweeper"]
+test = ["pytest==7.4.4", "pytest-coverage", "pytest-cases==3.8.5", "ARLBench[examples]"]
+examples = ["hypersweeper==0.2.0"]
 doc = [
-  "automl_sphinx_theme"
+  "automl_sphinx_theme==0.2.0"
 ]
 envpool = ["envpool==0.8.4"]
 
@@ -88,13 +81,6 @@ exclude_lines = [
   "raise NotImplementedError",
   "if TYPE_CHECKING",
 ]
-
-[tool.commitizen]
-name = "cz_conventional_commits"
-version = "1.2.0"
-update_changelog_on_bump = true
-version_files = ["pyproject.toml:version"]
-changelog_start_rev = "1.0.0"
 
 # https://github.com/charliermarsh/ruff
 [tool.ruff]
@@ -299,6 +285,7 @@ module = [
   "neps.*",
 ]
 ignore_missing_imports = true
+
 [tool.bumpversion]
 allow_dirty = false
 commit = false

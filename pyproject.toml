@@ -51,7 +51,12 @@ dev = ["ARLBench[doc, test, examples]", "ruff==0.4.0", "pre-commit==3.7.0", "bum
 test = ["pytest==7.4.4", "pytest-coverage", "pytest-cases==3.8.5", "ARLBench[examples]"]
 examples = ["hypersweeper==0.2.0"]
 doc = [
-  "automl_sphinx_theme==0.2.0"
+  "automl_sphinx_theme==0.2.0",
+  "sphinx-toolbox==3.5.0",
+  "sphinx-autodoc-typehints==2.1.0",
+  "myst-parser==2.0.0",
+  "sphinx-tabs==3.4.5",
+  "sphinx==7.3.7"
 ]
 envpool = ["envpool==0.8.4"]
 

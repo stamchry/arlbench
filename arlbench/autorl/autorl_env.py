@@ -166,35 +166,34 @@ class AutoRLEnv(gymnasium.Env):
         objectives = []
         objective_arguments = []
         cfg_objectives = list(set(self._config["objectives"]))
+
         for o in cfg_objectives:
-            if o not in OBJECTIVES and ("_".join(o.split("_")[:1]) in OBJECTIVES or "_".join(o.split("_")[:2]) in OBJECTIVES or "_".join(o.split("_")[:3]) in OBJECTIVES):
-                if "_".join(o.split("_")[:3]) in OBJECTIVES:
-                    base_o = "_".join(o.split("_")[:3])
-                    args = o.split("_")[3:]
-                elif "_".join(o.split("_")[:2]) in OBJECTIVES:
-                    base_o = "_".join(o.split("_")[:2])
-                    args = o.split("_")[2:]
+            if o not in OBJECTIVES:
+                matching_base = None
+                for base in OBJECTIVES:
+                    if o.startswith(base + "_"):
+                        matching_base = base
+                        break
+                if matching_base:
+                    parts = o.split("_")
+                    base_parts = matching_base.split("_")
+                    args = parts[len(base_parts):]
+                    base_o = matching_base
+                    arg_dict = {}
+
+                    if len(args) % 2 != 0:
+                        arg_dict["default_arg"] = args[0]
+                        args = args[1:]
+
+                    for i in range(0, len(args), 2):
+                        arg_dict[args[i]] = float(args[i + 1])
+
+                    objectives.append(OBJECTIVES[base_o])
+                    objective_arguments.append(arg_dict)
                 else:
-                    base_o = "_".join(o.split("_")[:1])
-                    args = o.split("_")[1:]
-                o = base_o
-                arg_dict = {}
-
-                # We assume that the default argument is always the first one
-                if len(args) % 2 != 0:
-                    arg_dict["default_arg"] = args[0]
-                    args = args[1:]
-
-                for i in range(0, len(args), 2):
-                    arg_dict[args[i]] = float(args[i + 1])
-
-                objectives += [OBJECTIVES[o]]
-                objective_arguments.append(arg_dict)
-
-            elif o not in OBJECTIVES:
-                raise ValueError(f"Invalid objective: {o}")
+                    raise ValueError(f"Invalid objective: {o}")
             else:
-                objectives += [OBJECTIVES[o]]
+                objectives.append(OBJECTIVES[o])
                 objective_arguments.append({})
 
         # Ensure right order of objectives, e.g. runtime is wrapped first

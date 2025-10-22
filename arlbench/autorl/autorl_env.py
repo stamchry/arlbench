@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Callable
-from typing import Any, Dict
+from typing import Any
 
 import gymnasium
 import jax
 import numpy as np
 import pandas as pd
-from omegaconf import OmegaConf
 from ConfigSpace import Configuration, ConfigurationSpace
 
 from arlbench.core.algorithms import (
@@ -123,12 +122,15 @@ class AutoRLEnv(gymnasium.Env):
         self._checkpoints = []
         self._track_metrics = (
             "all" in self._config["checkpoint"]
-            or "grad_info" in self._config["state_features"]
             or "loss" in self._config["checkpoint"]
+            or "grad_info" in self._config["state_features"]
+            or "loss_info" in self._config["state_features"]
         )
         self._track_trajectories = (
             "all" in self._config["checkpoint"]
             or "trajectories" in self._config["checkpoint"]
+            or "prediction_info" in self._config["state_features"]
+            or any(["train_reward" in o for o in self._config["objectives"]])
         )
 
         # Algorithm
@@ -145,7 +147,7 @@ class AutoRLEnv(gymnasium.Env):
         self._train_result = None
 
         # Optimization objectives
-        self._objectives = self._get_objectives()
+        self._objectives, self._objective_arguments = self._get_objectives()
 
         # State Features
         self._state_features = self._get_state_features()
@@ -162,18 +164,46 @@ class AutoRLEnv(gymnasium.Env):
             raise ValueError("Please select at least one optimization objective.")
 
         objectives = []
+        objective_arguments = []
         cfg_objectives = list(set(self._config["objectives"]))
+
         for o in cfg_objectives:
             if o not in OBJECTIVES:
-                raise ValueError(f"Invalid objective: {o}")
-            objectives += [OBJECTIVES[o]]
+                matching_base = None
+                for base in OBJECTIVES:
+                    if o.startswith(base + "_"):
+                        matching_base = base
+                        break
+                if matching_base:
+                    parts = o.split("_")
+                    base_parts = matching_base.split("_")
+                    args = parts[len(base_parts):]
+                    base_o = matching_base
+                    arg_dict = {}
+
+                    if len(args) % 2 != 0:
+                        arg_dict["default_arg"] = args[0]
+                        args = args[1:]
+
+                    for i in range(0, len(args), 2):
+                        arg_dict[args[i]] = float(args[i + 1])
+
+                    objectives.append(OBJECTIVES[base_o])
+                    objective_arguments.append(arg_dict)
+                else:
+                    raise ValueError(f"Invalid objective: {o}")
+            else:
+                objectives.append(OBJECTIVES[o])
+                objective_arguments.append({})
 
         # Ensure right order of objectives, e.g. runtime is wrapped first
+        objective_arguments = [args for _, args in sorted(zip(objectives, objective_arguments, strict=False), key=lambda o: o[0][1])]
         objectives = sorted(objectives, key=lambda o: o[1])
 
         # Now we are extracting the actual classes for each objective
         # They are used to wrap the train function and compute the objective
-        return [o[0] for o in objectives]
+        objectives = [o[0] for o in objectives]
+        return objectives, objective_arguments
 
     def _get_state_features(self) -> list[StateFeature]:
         """Maps the state features as list of strings to a sorted list of the actual state feature classes.
@@ -195,7 +225,7 @@ class AutoRLEnv(gymnasium.Env):
         Returns:
             gymnasium.spaces.Dict: Gymnasium space.
         """
-        obs_space = {f.KEY: f.get_state_space() for f in self._state_features}
+        obs_space = {f.KEY: f.get_state_space(self._config["algorithm"]) for f in self._state_features}
 
         obs_space["steps"] = gymnasium.spaces.Box(
             low=np.array([0, 0]), high=np.array([np.inf, np.inf])
@@ -227,8 +257,8 @@ class AutoRLEnv(gymnasium.Env):
         train_func = self._algorithm.train
 
         # The objectives are wrapped first since runtime should be accurate
-        for o in self._objectives:
-            train_func = o(train_func, objectives, self._config["optimize_objectives"])
+        for o, args in zip(self._objectives, self._objective_arguments, strict=False):
+            train_func = o(train_func, objectives, self._config["optimize_objectives"], **args)
 
         # Then we wrap the state features around the training function
         obs["steps"] = np.array([self._c_step, self._total_training_steps])
@@ -266,8 +296,8 @@ class AutoRLEnv(gymnasium.Env):
             cnn_policy=self._config["cnn_policy"],
             deterministic_eval=self._config["deterministic_eval"],
         )
-    
-    def get_algorithm_init_kwargs(self, init_rng) -> Dict:
+
+    def get_algorithm_init_kwargs(self, init_rng) -> dict:
         """Returns the algorithm initialization parameters.
 
         Returns:
@@ -361,7 +391,7 @@ class AutoRLEnv(gymnasium.Env):
             self._algorithm_state = self._algorithm.init(init_rng)
         else:
             init_rng = jax.random.key(seed)
-            init_kwargs = self.get_algorithm_init_kwargs(init_rng)            
+            init_kwargs = self.get_algorithm_init_kwargs(init_rng)
             self._algorithm_state = self._algorithm.init(**init_kwargs)
 
         # Training kwargs

@@ -142,7 +142,7 @@ class Reward(Objective):
             if optimize_objectives != optimize_flag:
                 reward *= -1
 
-            objectives[Reward.KEY] = reward.item()
+            objectives[f"{Reward.KEY}_{aggregate}"] = reward.item()
             return result
 
         return wrapper
@@ -189,7 +189,7 @@ class DiscountedReward(Objective):
             if optimize_objectives != optimize_flag:
                 reward *= -1
 
-            objectives[DiscountedReward.KEY] = reward.item()
+            objectives[f"{DiscountedReward.KEY}_{default_arg}"] = reward.item()
             return result
 
         return wrapper
@@ -241,7 +241,7 @@ class TrainReward(Objective):
             if optimize_objectives != optimize_flag:
                 reward *= -1
 
-            objectives[TrainReward.KEY] = reward.item()
+            objectives[f"{TrainReward.KEY}_{aggregate}"] = reward.item()
             return result
 
         return wrapper
@@ -294,7 +294,7 @@ class DiscountedTrainReward(Objective):
             if optimize_objectives != optimize_flag:
                 reward_mean *= -1
 
-            objectives[DiscountedTrainReward.KEY] = reward_mean.item()
+            objectives[f"{DiscountedTrainReward.KEY}_{aggregate}"] = reward_mean.item()
             return result
 
         return wrapper

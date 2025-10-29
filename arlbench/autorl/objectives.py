@@ -104,8 +104,8 @@ class Runtime(Objective):
 
             # Naturally runtime is minimized. However, if we don't want
             # to minimize the objectives we have to flip the sign
-            if optimize_objectives != Runtime.get_spec()["optimize"]:
-                runtime *= -1
+            #if optimize_objectives != Runtime.get_spec()["optimize"]:
+            #    runtime *= -1
 
             objectives["runtime"] = runtime
             return result

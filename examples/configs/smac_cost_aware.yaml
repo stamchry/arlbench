@@ -1,0 +1,59 @@
+defaults:
+  - _self_
+  - /algorithm: dqn
+  - /environment: cc_cartpole
+  - /search_space: dqn
+  - override hydra/sweeper: HyperSMAC
+
+hydra:
+  sweeper:
+    n_trials: 1000
+    search_space: ${search_space}
+    sweeper_kwargs:
+      maximize: true
+      max_parallelization: 0
+      optimizer_kwargs:
+        smac_facade:
+          _target_: smac.facade.cost_aware_facade.CostAwareFacade
+          _partial_: true
+          total_resource_budget: 50
+          logging_level: 10
+          overwrite: true
+        scenario:
+          seed: ${smac_seed}
+          n_trials: ${hydra.sweeper.n_trials}
+          deterministic: true
+          n_workers: 1
+          output_directory: ${hydra.sweep.dir}
+      seeds: [42, 43, 44]
+  run:
+    dir: results/smac_det_true/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+  sweep:
+    dir: results/smac_det_true/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+smac_seed: 0
+jax_enable_x64: ${environment.jax_enable_x64}
+seed: 42
+
+autorl:
+  seed: ${seed}
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  eval_env_kwargs: ${environment.eval_kwargs}
+  n_envs: ${environment.n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${environment.cnn_policy}
+  nas_config: ${nas_config}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  state_features: []
+  objectives: ["reward_mean", "runtime"]
+  optimize_objectives: "upper"
+  n_eval_steps: 10
+  n_eval_episodes: 128

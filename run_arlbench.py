@@ -47,6 +47,11 @@ def run(cfg: DictConfig, logger: logging.Logger):
     with open("./done.txt", "w+") as f:
         f.write("yes")
 
+    if "reward_mean" in objectives:
+        objectives["performance"] = objectives.pop("reward_mean")
+    if "runtime" in objectives:
+        objectives["cost"] = objectives.pop("runtime")
+        
     return objectives
 
 

@@ -9,7 +9,6 @@ hydra:
     timeout_min: 2880
     cpus_per_task: 2
     mem_per_cpu: 4000M
-    account: supp0003
     setup:
       - export JAX_PLATFORM_NAME=gpu
       - source /rwthfs/rz/cluster/home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate

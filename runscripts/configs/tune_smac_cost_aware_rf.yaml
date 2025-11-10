@@ -18,7 +18,7 @@ hydra:
         smac_facade:
           _target_: smac.facade.cost_aware_facade.CostAwareFacade
           _partial_: true
-          total_resource_budget: 50
+          total_resource_budget: 10000
           logging_level: 10
           overwrite: true
         scenario:

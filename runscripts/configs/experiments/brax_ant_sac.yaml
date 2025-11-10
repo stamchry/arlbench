@@ -5,8 +5,8 @@ defaults:
   - override /search_space: sac_brax
 
 environment:
-  n_envs: 2
-  n_total_timesteps: 4
+  n_envs: 4
+  n_total_timesteps: 10000
 
 hp_config:
   gradient_steps: 8

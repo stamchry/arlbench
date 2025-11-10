@@ -11,5 +11,5 @@ hydra:
     mem_per_cpu: 2000M
     account: p0021208
     setup:
-      - source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate
+      - source /rwthfs/rz/cluster/home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
       - module load CUDA/12.4.0

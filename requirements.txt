@@ -1,6 +1,6 @@
 absl-py==2.3.1
 aiofiles==25.1.0
-alabaster==1.0.0
+alabaster==0.7.16
 annotated-types==0.7.0
 antlr4-python3-runtime==4.9.3
 anyio==4.11.0

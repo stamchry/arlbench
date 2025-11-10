@@ -6,7 +6,7 @@ defaults:
 
 environment:
   n_envs: 4
-  n_total_timesteps: 10000
+  n_total_timesteps: 1000
 
 hp_config:
   gradient_steps: 8

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # USAGE run_rs.sh EXPERIMENT      CLUSTER 
 # USAGE run_rs.sh cc_cartpole_dqn local  
@@ -7,7 +7,7 @@ directory="smac"
 
 mkdir -p "$directory/log"
 
-echo "#!/bin/bash
+echo "#!/bin/zsh
 
 
 #SBATCH --cpus-per-task=2

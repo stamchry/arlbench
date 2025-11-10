@@ -93,7 +93,7 @@ dist: clean ## builds source and wheel package
 	python setup.py bdist_wheel
 	ls -l dist
 install: clean ## install the package to the active Python's site-packages
-	pip install -e .
+	uv pip install -e .
 
 install-dev: clean ## install with dev tools
 	pip install -e ".[dev,examples]"

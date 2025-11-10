@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 import hydra
 import jax
 from arlbench.arlbench import run_arlbench
+import json
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -43,7 +44,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
     logger.info(f"Returned objectives: {objectives}")
 
     with open("./performance.csv", "w+") as f:
-        f.write(str(objectives))
+        json.dump(objectives, f)
     with open("./done.txt", "w+") as f:
         f.write("yes")
 

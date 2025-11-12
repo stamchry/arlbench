@@ -213,6 +213,7 @@ class PPO(Algorithm):
                     "activation", ["tanh", "relu"], default="tanh"
                 ),
                 "hidden_size": Integer("hidden_size", (1, 2048), default=64),
+                "num_mlp_layers": Integer("num_mlp_layers", (1, 4), default=3),
             },
         )
 

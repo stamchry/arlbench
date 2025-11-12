@@ -12,33 +12,39 @@ hyperparameters:
     log: false
   hp_config.minibatch_size:
     type: categorical
-    choices: [128, 256, 512]
+    choices: [256, 512, 1024, 2048, 5096]
   hp_config.gae_lambda:
     type: uniform_float
     upper: 0.9999
     lower: 0.8
     log: false
-  hp_config.clip_eps:
-    type: uniform_float
-    upper: 0.5
-    lower: 0.0
-    log: false
-  hp_config.vf_clip_eps:
-    type: uniform_float
-    upper: 0.5
-    lower: 0.0
-    log: false
-  hp_config.normalize_advantage:
-    type: categorical
-    choices: [True, False]
   hp_config.vf_coef:
     type: uniform_float
     upper: 1.0
     lower: 0.0
     default: 0.5
     log: false
-  hp_config.max_grad_norm:
+  hp_config.gamma_loss_rate:
     type: uniform_float
-    upper: 1.0
-    lower: 0.0
-    log: false
+    upper: 0.05
+    lower: 0.001
+    default: 0.01
+    log: True
+  hp_config.n_steps:
+    type: uniform_int
+    upper: 16
+    lower: 1
+    log: False
+  hp_config.update_epochs:
+    type: uniform_int
+    upper: 20
+    lower: 1
+    log: False
+  nas_config.num_mlp_layers:
+    type: uniform_int
+    upper: 3
+    lower: 1
+    log: False
+  environment.n_envs:
+    type: categorical
+    choices: [512, 1024, 2048, 5096, 10192]

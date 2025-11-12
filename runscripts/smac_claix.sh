@@ -20,8 +20,8 @@ echo "#!/bin/zsh
 #SBATCH --error $directory/log/smac_${1}_%A.err
 #SBATCH --array 1,3
 
-source /rwthfs/rz/cluster/home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
-python runscripts/run_arlbench.py -m --config-name=tune_smac_cost_aware_rf experiments=$1 cluster=$2 smac_seed=\$SLURM_ARRAY_TASK_ID
+source .venv3.11/bin/activate
+python runscripts/run_arlbench.py -m --config-name=tune_smac_cost_aware_rf experiments=$1 cluster=$2 smac_seed=\$SLURM_ARRAY_TASK_ID +sb_zoo=brax_ant_ppo environment=brax_ant
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh

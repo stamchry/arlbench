@@ -1,10 +1,10 @@
 defaults:
   - _self_
   - /cluster: local
-  - /algorithm: ppo
-  - environment: brax_ant
-  - search_space: ppo_cpu
-  - /experiments: brax_ant_ppo
+  - /algorithm: dqn
+  - /environment: cc_cartpole
+  - search_space: dqn
+  - /experiments: cc_cartpole_dqn
 
 hydra:
   run:
@@ -18,7 +18,7 @@ jax_enable_x64: false
 load_checkpoint: ""
 
 autorl:
-  seed: 42
+  seed: ${seed}
   env_framework: ${environment.framework}
   env_name: ${environment.name}
   env_kwargs: ${environment.kwargs}
@@ -36,4 +36,4 @@ autorl:
   optimize_objectives: "upper"
   n_steps: 10
   n_eval_steps: 10
-  n_eval_episodes: 10
+  n_eval_episodes: 128

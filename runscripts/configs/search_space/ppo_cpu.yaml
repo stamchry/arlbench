@@ -12,7 +12,7 @@ hyperparameters:
     log: false
   hp_config.minibatch_size:
     type: categorical
-    choices: [32, 64, 128]
+    choices: [512, 1024, 2048]
   hp_config.gae_lambda:
     type: uniform_float
     upper: 0.9999

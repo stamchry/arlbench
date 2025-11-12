@@ -3,9 +3,9 @@
 from __future__ import annotations
 import traceback
 import sys
+import time
 
 import hydra
-from codecarbon import track_emissions
 import jax
 import logging
 from omegaconf import OmegaConf, DictConfig
@@ -19,7 +19,6 @@ OmegaConf.register_new_resolver("multiply", lambda x, y: x * y, replace=True)
 OmegaConf.register_new_resolver("divide", lambda x, y: x / y, replace=True)
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
-@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log", 
 					format="%(asctime)s %(message)s", 
@@ -45,7 +44,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
     """Console script for arlbench."""
 
     logger.info("Starting run with config:")
-    logger.info(str(OmegaConf.to_yaml(cfg)))
+    logger.info(str(OmegaConf.to_yaml(cfg, resolve=True)))
 
     # check if file done exists and if so, return
     try:
@@ -59,7 +58,9 @@ def run(cfg: DictConfig, logger: logging.Logger):
     except FileNotFoundError:
         pass
 
+    start = time.time()
     objectives = run_arlbench(cfg, logger=logger)
+    training_time = time.time() - start
 
     # Create the final dictionary for Hypersweeper
     result = {}
@@ -72,6 +73,11 @@ def run(cfg: DictConfig, logger: logging.Logger):
         json.dump(result, f)
     with open("./done.txt", "w") as f:
         f.write("yes")
+    with open("./config.yaml", "w+") as fp:
+        OmegaConf.save(config=cfg, f=fp, resolve=True)
+    with open("./time.csv", "w+") as fp:
+        fp.write(str(training_time))
+    
 
     logger.info(f"Returning objectives for Hypersweeper: {result}")
     return result

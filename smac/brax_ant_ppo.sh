@@ -11,6 +11,6 @@
 #SBATCH --error smac/log/smac_brax_ant_ppo_%A.err
 #SBATCH --array 1,3
 
-source /rwthfs/rz/cluster/home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
-python runscripts/run_arlbench.py -m --config-name=tune_smac_cost_aware_rf experiments=brax_ant_ppo cluster=claix_gpu_h100 smac_seed=$SLURM_ARRAY_TASK_ID
+source .venv3.11/bin/activate
+python runscripts/run_arlbench.py -m --config-name=tune_smac_cost_aware_rf experiments=brax_ant_ppo cluster=claix_gpu_h100 smac_seed=$SLURM_ARRAY_TASK_ID +sb_zoo=brax_ant_ppo environment=brax_ant
 

@@ -1,10 +1,10 @@
 defaults:
   - _self_
   - /cluster: local
-  - /algorithm: dqn
-  - /environment: cc_cartpole
-  - /search_space: dqn
-  - /experiments: cc_cartpole_dqn
+  - /algorithm: ppo
+  - environment: cc_cartpole
+  - search_space: ppo_cpu
+  - /experiments: cc_cartpole_ppo
   - override hydra/sweeper: HyperSMAC
 
 hydra:
@@ -18,7 +18,7 @@ hydra:
         smac_facade:
           _target_: smac.facade.cost_aware_facade.CostAwareFacade
           _partial_: true
-          total_resource_budget: 10000
+          total_resource_budget: 1000
           logging_level: 10
           overwrite: true
         scenario:
@@ -27,7 +27,7 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_zsh/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
-      seeds: [42, 43, 44]
+      seeds: [42]
   run:
     dir: results/smac_zsh/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
   sweep:

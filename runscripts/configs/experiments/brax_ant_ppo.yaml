@@ -1,7 +1,8 @@
 # @package _global_
 defaults:
   - override /environment: brax_ant    
-  - override /algorithm: ppo       
+  - override /algorithm: ppo
+  - override /search_space: ppo_gpu
 
 environment:
   n_envs: 2048

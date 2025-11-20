@@ -45,6 +45,11 @@ hyperparameters:
     upper: 3
     lower: 1
     log: False
+  nas_config.hidden_size:
+    type: uniform_int
+    upper: 2048
+    lower: 1
+    log: False
   environment.n_envs:
     type: categorical
     choices: [512, 1024, 2048, 5096, 10192]

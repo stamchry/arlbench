@@ -46,17 +46,6 @@ def run(cfg: DictConfig, logger: logging.Logger):
     logger.info("Starting run with config:")
     logger.info(str(OmegaConf.to_yaml(cfg, resolve=True)))
 
-    # check if file done exists and if so, return
-    try:
-        with open("./done.txt", "r") as f:
-            logger.info("Job already done, returning.")
-
-        with open("./performance.csv", "r") as pf:
-            perf_dict = json.load(pf)
-            logger.info(f"Returning performance {perf_dict}.")
-            return perf_dict
-    except FileNotFoundError:
-        pass
 
     start = time.time()
     objectives = run_arlbench(cfg, logger=logger)

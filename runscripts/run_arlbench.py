@@ -4,6 +4,7 @@ from __future__ import annotations
 import traceback
 import sys
 import time
+import math
 
 import hydra
 import jax
@@ -54,7 +55,10 @@ def run(cfg: DictConfig, logger: logging.Logger):
     # Create the final dictionary for Hypersweeper
     result = {}
     if "reward_mean" in objectives:
-        result["performance"] = objectives["reward_mean"]
+        reward = objectives["reward_mean"]
+        if reward is None or (isinstance(reward, float) and (math.isnan(reward) or reward < -2000)):
+            reward = -2000
+        result["performance"] = reward
     if "runtime" in objectives:
         result["cost"] = objectives["runtime"]
 

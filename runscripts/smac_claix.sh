@@ -1,24 +1,49 @@
 #!/bin/zsh
 
-# USAGE run_rs.sh EXPERIMENT      CLUSTER 
-# USAGE run_rs.sh cc_cartpole_dqn local  
+# USAGE: ./smac_claix.sh EXPERIMENT      CLUSTER      SEARCH_SPACE
+# e.g.:  ./smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid
 
-directory="smac"
+if [ "$#" -ne 3 ]; then
+    echo "Illegal number of parameters. Usage: $0 EXPERIMENT CLUSTER SEARCH_SPACE"
+    exit 1
+fi
 
-mkdir -p "$directory/log"
+EXPERIMENT=$1
+CLUSTER=$2
+SEARCH_SPACE=$3
+JOB_NAME="smac_${EXPERIMENT}_${SEARCH_SPACE}"
+DIRECTORY="smac/${EXPERIMENT}/${SEARCH_SPACE}"
 
-echo "#!/bin/zsh
+# Create a dedicated directory for this specific experiment run
+mkdir -p "$DIRECTORY/log"
 
-#SBATCH --job-name=smac_${1}
-#SBATCH -t 01:00:00                                                
+# Use a 'here document' (cat <<EOF) for better readability and maintenance
+cat > "$DIRECTORY/submit.sh" <<EOF
+#!/bin/zsh
+
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=2000M
+#SBATCH --job-name=${JOB_NAME}
+#SBATCH -t 08:00:00
 #SBATCH --mail-type fail,end
 #SBATCH --mail-user stamatios.chrysanthidis@rwth-aachen.de
-#SBATCH --output $directory/log/smac_${1}_%A.out
-#SBATCH --error $directory/log/smac_${1}_%A.err
+#SBATCH --output $DIRECTORY/log/%A.out
+#SBATCH --error $DIRECTORY/log/%A.err
+#SBATCH --array 1,3
 
-source .venv3.11/bin/activate
-python runscripts/run_arlbench.py -m --config-name=tune_smac_cost_aware_rf experiments=$1 cluster=$2 smac_seed=1
-" > $directory/${1}.sh
-echo "Submitting $directory for $1"
-chmod +x $directory/${1}.sh
-sbatch --begin=now $directory/${1}.sh
+module purge
+module load GCCcore/12.2.0
+module load Python/3.10.8
+source .venv12/bin/activate
+
+python runscripts/run_arlbench.py -m \\
+    --config-name=tune_smac_cost_aware_rf \\
+    experiments=$EXPERIMENT \\
+    cluster=$CLUSTER \\
+    search_space=$SEARCH_SPACE \\
+    smac_seed=\$SLURM_ARRAY_TASK_ID
+EOF
+
+echo "Generated submission script in $DIRECTORY/submit.sh"
+chmod +x "$DIRECTORY/submit.sh"
+sbatch --begin=now "$DIRECTORY/submit.sh"

@@ -2,7 +2,7 @@
 defaults:
   - override /environment: box2d_lunar_lander    
   - override /algorithm: ppo
-  - override /search_space: ppo_cpu  
+  - override /search_space: ppo_cpu
 
 # https://huggingface.co/sb3/ppo-PongNoFrameskip-v4
 environment:

@@ -2,7 +2,7 @@
 defaults:
   - override /environment: cc_cartpole    
   - override /algorithm: ppo
-  - override /search_space: ppo_cpu
+  - override /search_space: ppo_cpu_hybrid
 
 # https://huggingface.co/sb3/ppo-CartPole-v1
 environment:

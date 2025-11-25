@@ -1,0 +1,29 @@
+seed: 0
+hyperparameters:
+  hp_config.learning_rate:
+    type: uniform_float
+    upper: 0.1
+    lower: 1.0e-06
+    log: true
+  hp_config.gamma_loss_rate:
+    type: uniform_float
+    upper: 0.05
+    lower: 0.001
+    default_value: 0.01
+    log: True
+  hp_config.gae_lambda:
+    type: uniform_float
+    upper: 0.9999
+    lower: 0.9
+    log: false
+  hp_config.ent_coef:
+    type: uniform_float
+    upper: 0.5 
+    lower: 0.0
+    log: false
+  hp_config.vf_coef:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default_value: 0.5
+    log: false

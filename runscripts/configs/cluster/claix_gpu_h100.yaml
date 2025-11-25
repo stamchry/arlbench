@@ -7,8 +7,12 @@ hydra:
     gres: "gpu:1"
     timeout_min: 60
     partition: c23g
-    cpus_per_task: 8
-    mem_per_cpu: 1000M
+    cpus_per_task: 16
+    mem_per_cpu: 2000M
     setup:
-      - source /rwthfs/rz/cluster/home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv3.11/bin/activate
+      - module purge
+      - module load GCCcore/12.2.0
+      - module load Python/3.10.8
       - module load CUDA/12.4.0
+      - module load cuDNN/8.9.7.29-CUDA-12.4.0
+      - .venv12/bin/activate

@@ -4,9 +4,11 @@ defaults:
 
 hydra:
   launcher:
-    timeout_min: 20
+    timeout_min: 30
     partition: c23ms
     cpus_per_task: 8
     mem_per_cpu: 2000M
     setup:
-      - source /rwthfs/rz/cluster/home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
+      - module load GCCcore/12.2.0
+      - module load Python/3.10.8
+      - source .venv/bin/activate

@@ -1,5 +1,5 @@
 #!/bin/zsh
-#./smac_claix.sh brax_ant_ppo claix_gpu_h100
-
-runscripts/smac_claix.sh cc_cartpole_ppo devel
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_cost
 

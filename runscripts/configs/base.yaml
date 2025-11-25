@@ -32,7 +32,7 @@ autorl:
   checkpoint_name: "default_checkpoint"
   checkpoint_dir: "/tmp"
   state_features: []
-  objectives: ["reward_mean"]
+  objectives: ["reward_mean", "runtime"]
   optimize_objectives: "upper"
   n_steps: 10
   n_eval_steps: 10

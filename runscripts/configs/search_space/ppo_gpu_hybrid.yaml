@@ -5,36 +5,39 @@ hyperparameters:
     upper: 0.1
     lower: 1.0e-06
     log: true
+  hp_config.gamma_loss_rate:
+    type: uniform_float
+    upper: 0.05
+    lower: 0.001
+    default_value: 0.01
+    log: True
+  hp_config.gae_lambda:
+    type: uniform_float
+    upper: 0.9999
+    lower: 0.9
+    log: false
   hp_config.ent_coef:
     type: uniform_float
     upper: 0.5 
     lower: 0.0
     log: false
-  hp_config.minibatch_size:
-    type: categorical
-    choices: [256, 512, 1024, 2048, 5096]
-  hp_config.gae_lambda:
-    type: uniform_float
-    upper: 0.9999
-    lower: 0.8
-    log: false
   hp_config.vf_coef:
     type: uniform_float
     upper: 1.0
     lower: 0.0
-    default: 0.5
+    default_value: 0.5
     log: false
-  hp_config.gamma_loss_rate:
-    type: uniform_float
-    upper: 0.05
-    lower: 0.001
-    default: 0.01
-    log: True
+  hp_config.minibatch_size:
+    type: categorical
+    choices: [256, 512, 1024, 2048, 4096]
   hp_config.n_steps:
     type: uniform_int
     upper: 16
     lower: 1
     log: False
+  environment.n_envs:
+    type: categorical
+    choices: [512, 1024, 2048, 4096, 8192]
   hp_config.update_epochs:
     type: uniform_int
     upper: 20
@@ -46,10 +49,5 @@ hyperparameters:
     lower: 1
     log: False
   nas_config.hidden_size:
-    type: uniform_int
-    upper: 2048
-    lower: 1
-    log: False
-  environment.n_envs:
     type: categorical
-    choices: [512, 1024, 2048, 5096, 10192]
+    choices: [256, 512, 1024, 2048]

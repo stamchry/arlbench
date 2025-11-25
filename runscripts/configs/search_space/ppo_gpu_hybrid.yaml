@@ -35,6 +35,10 @@ hyperparameters:
     upper: 16
     lower: 1
     log: False
+  environment.n_total_timesteps:
+    type: categorical
+    choices: 
+      - ${environment.n_total_timesteps}
   environment.n_envs:
     type: categorical
     choices: [512, 1024, 2048, 4096, 8192]

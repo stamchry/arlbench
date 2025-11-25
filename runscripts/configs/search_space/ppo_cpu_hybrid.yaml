@@ -38,6 +38,10 @@ hyperparameters:
   environment.n_envs:
     type: categorical
     choices: [4, 8, 16, 32, 64]
+  environment.n_total_timesteps:
+    type: categorical
+    choices: 
+      - ${environment.n_total_timesteps}
   hp_config.update_epochs:
     type: uniform_int
     upper: 20

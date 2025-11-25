@@ -1,18 +1,19 @@
 #!/bin/zsh
 
-# USAGE: ./smac_claix.sh EXPERIMENT      CLUSTER      SEARCH_SPACE
-# e.g.:  ./smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid
+# USAGE: ./smac_claix.sh EXPERIMENT      CLUSTER      SEARCH_SPACE      CONFIG_NAME
+# e.g.:  ./smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_rf
 
-if [ "$#" -ne 3 ]; then
-    echo "Illegal number of parameters. Usage: $0 EXPERIMENT CLUSTER SEARCH_SPACE"
+if [ "$#" -ne 4 ]; then
+    echo "Illegal number of parameters. Usage: $0 EXPERIMENT CLUSTER SEARCH_SPACE CONFIG_NAME"
     exit 1
 fi
 
 EXPERIMENT=$1
 CLUSTER=$2
 SEARCH_SPACE=$3
+CONFIG_NAME=$4
 JOB_NAME="smac_${EXPERIMENT}_${SEARCH_SPACE}"
-DIRECTORY="smac/${EXPERIMENT}/${SEARCH_SPACE}"
+DIRECTORY="smac/${EXPERIMENT}/${SEARCH_SPACE}/${CONFIG_NAME}"
 
 # Create a dedicated directory for this specific experiment run
 mkdir -p "$DIRECTORY/log"
@@ -37,7 +38,7 @@ module load Python/3.10.8
 source .venv12/bin/activate
 
 python runscripts/run_arlbench.py -m \\
-    --config-name=tune_smac_cost_aware_rf \\
+    --config-name=$CONFIG_NAME \\
     experiments=$EXPERIMENT \\
     cluster=$CLUSTER \\
     search_space=$SEARCH_SPACE \\

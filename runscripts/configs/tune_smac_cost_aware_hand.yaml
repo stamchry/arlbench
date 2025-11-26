@@ -19,7 +19,7 @@ hydra:
           _target_: smac.facade.cost_aware_facade.CostAwareFacade
           _partial_: true
           rl_hand_crafted: True
-          total_resource_budget: 616
+          total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
           logging_level: 10
           overwrite: true
         scenario:

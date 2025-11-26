@@ -32,17 +32,28 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 #SBATCH --error $DIRECTORY/log/%A.err
 #SBATCH --array 1,3
 
+# Change to the project directory
+cd /home/aq055502/projects/arlbench-smac-hyper/arlbench
+
 module purge
 module load GCCcore/12.2.0
 module load Python/3.10.8
 source .venv12/bin/activate
 
+# First, run with default parameters to get the cost
+echo "Determining cost of default configuration..."
+# Run the script, find the specific log line with the cost, and extract the number.
+COST=\$(python runscripts/run_arlbench.py experiments=$EXPERIMENT cluster=$CLUSTER 2>&1 | grep "Returning objectives for Hypersweeper" | sed -n "s/.*'cost': \([0-9.]*\).*/\1/p")
+echo "Default cost determined: \$COST"
+
+# Now, run the multi-node SMAC optimization, passing the cost
 python runscripts/run_arlbench.py -m \\
     --config-name=$CONFIG_NAME \\
     experiments=$EXPERIMENT \\
     cluster=$CLUSTER \\
     search_space=$SEARCH_SPACE \\
-    smac_seed=\$SLURM_ARRAY_TASK_ID
+    smac_seed=\$SLURM_ARRAY_TASK_ID \\
+    +default_hyperparameter.running_time=\$COST
 EOF
 
 echo "Generated submission script in $DIRECTORY/submit.sh"

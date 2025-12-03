@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 10
+    n_trials: 100
     search_space: ${search_space}
     sweeper_kwargs:
       seeds: [0, 1]
@@ -34,10 +34,16 @@ hydra:
           _partial_: true
           max_config_calls: 1   # the number of seeds
           seed: ${smac_seed}
-        callbacks:
+        callbacks: #We set a budget exhausted callback to stop optimization when total resource budget is exhausted
           - _target_: smac.callback.BudgetExhaustedCallback
-            total_resource_budget: 20
+            total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
             cumulative_cost_tracker: [0]
+        initial_design: #We explicitly set the number of initial design points
+          _target_: smac.facade.blackbox_facade.BlackBoxFacade.get_initial_design
+          _partial_: true
+          n_configs: 8
+          max_ratio: 1.0
+
   run:
     dir: results/smac/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:

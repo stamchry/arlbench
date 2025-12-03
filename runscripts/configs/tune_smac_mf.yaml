@@ -1,15 +1,15 @@
 defaults:
   - _self_
   - /cluster: local
-  - /algorithm: dqn
+  - /algorithm: ppo
   - /environment: cc_cartpole
-  - /search_space: dqn
-  - /experiments: cc_cartpole_dqn
+  - /search_space: ppo_cpu_hybrid
+  - /experiments: cc_cartpole_ppo
   - override hydra/sweeper: HyperSMAC
 
 hydra:
   sweeper:
-    n_trials: 70
+    n_trials: 100
     budget: ${multiply:${environment.n_total_timesteps},32}
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
@@ -36,6 +36,15 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_mf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+        callbacks: #We set a budget exhausted callback to stop optimization when total resource budget is exhausted
+          - _target_: smac.callback.BudgetExhaustedCallback
+            total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
+            cumulative_cost_tracker: [0]
+        initial_design: #We explicitly set the number of initial design points
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_initial_design
+          _partial_: true
+          n_configs: 8
+          max_ratio: 1.0
   run:
     dir: results/smac_mf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
@@ -63,7 +72,7 @@ autorl:
   checkpoint_name: "default_checkpoint"
   checkpoint_dir: "/tmp"
   state_features: []
-  objectives: ["reward_mean"]
+  objectives: ["reward_mean", "runtime"]
   optimize_objectives: "upper"
   n_steps: 10
   n_eval_steps: 1

@@ -26,12 +26,12 @@ hydra:
           n_trials: ${hydra.sweeper.n_trials}
           deterministic: true
           n_workers: 1
-          output_directory: results/smac_rf/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
+          output_directory: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
       seeds: [42, 43]
   run:
-    dir: results/smac_rf/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+    dir: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac_rf/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+    dir: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   job:
     chdir: true
 

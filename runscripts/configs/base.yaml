@@ -2,15 +2,15 @@ defaults:
   - _self_
   - /cluster: local
   - /algorithm: ppo
-  - environment: brax_ant
-  - search_space: ppo_cpu
-  - /experiments: brax_ant_ppo
+  - environment: cc_cartpole
+  - search_space: ppo_cpu_hybrid
+  - /experiments: cc_cartpole_ppo
 
 hydra:
   run:
-    dir: results/${algorithm}_${environment.name}/${autorl.seed}
+    dir: results/base/${algorithm}_${autorl.env_name}_${search_space.name}/${search_space.seed}/${seed}
   sweep:
-    dir: results/${algorithm}_${environment.name}/${autorl.seed}
+    dir: results/base/${algorithm}_${autorl.env_name}_${search_space.name}/${search_space.seed}/${seed}
   job:
     chdir: true
 

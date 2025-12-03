@@ -12,8 +12,8 @@ EXPERIMENT=$1
 CLUSTER=$2
 SEARCH_SPACE=$3
 CONFIG_NAME=$4
-JOB_NAME="smac_${EXPERIMENT}_${SEARCH_SPACE}"
-DIRECTORY="smac/${EXPERIMENT}/${SEARCH_SPACE}/${CONFIG_NAME}"
+JOB_NAME="rs_${EXPERIMENT}_${SEARCH_SPACE}"
+DIRECTORY="rs/${EXPERIMENT}/${SEARCH_SPACE}/${CONFIG_NAME}"
 
 # Create a dedicated directory for this specific experiment run
 mkdir -p "$DIRECTORY/log"
@@ -23,7 +23,6 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 #!/bin/zsh
 
 #SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=2000M
 #SBATCH --job-name=${JOB_NAME}
 #SBATCH -t 08:00:00
 #SBATCH --mail-type fail,end
@@ -32,8 +31,7 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 #SBATCH --error $DIRECTORY/log/%A.err
 #SBATCH --array 1,3
 
-# Change to the project directory
-cd /home/aq055502/projects/arlbench-smac-hyper/arlbench
+
 
 module purge
 module load GCCcore/12.2.0
@@ -49,8 +47,8 @@ python runscripts/run_arlbench.py -m \\
     --config-name=$CONFIG_NAME \\
     experiments=$EXPERIMENT \\
     cluster=$CLUSTER \\
-    search_space_name=$SEARCH_SPACE \\
-    smac_seed=\$SLURM_ARRAY_TASK_ID
+    search_space=$SEARCH_SPACE \\
+    search_space.seed=\$SLURM_ARRAY_TASK_ID
 EOF
 
 echo "Generated submission script in $DIRECTORY/submit.sh"

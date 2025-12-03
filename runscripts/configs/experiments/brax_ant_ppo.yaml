@@ -2,7 +2,7 @@
 defaults:
   - override /environment: brax_ant    
   - override /algorithm: ppo
-  - override /search_space: ppo_gpu
+  - override /search_space: ppo_gpu_hybrid
 
 environment:
   n_envs: 2048

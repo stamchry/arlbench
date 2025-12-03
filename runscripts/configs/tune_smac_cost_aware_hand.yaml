@@ -18,7 +18,7 @@ hydra:
         smac_facade:
           _target_: smac.facade.cost_aware_facade.CostAwareFacade
           _partial_: true
-          rl_hand_crafted: True
+          rl_hand_crafted_cost_model: True
           total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
           logging_level: 10
           overwrite: true
@@ -27,12 +27,12 @@ hydra:
           n_trials: ${hydra.sweeper.n_trials}
           deterministic: true
           n_workers: 1
-          output_directory: results/smac_hand_crafted/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
+          output_directory: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
       seeds: [42, 43]
   run:
-    dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+    dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+    dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   job:
     chdir: true
 

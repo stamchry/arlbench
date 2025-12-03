@@ -8,11 +8,10 @@ hydra:
     timeout_min: 60
     partition: c23g
     cpus_per_task: 16
-    mem_per_cpu: 2000M
     setup:
       - module purge
       - module load GCCcore/12.2.0
       - module load Python/3.10.8
-      - module load CUDA/12.4.0
-      - module load cuDNN/8.9.7.29-CUDA-12.4.0
-      - .venv12/bin/activate
+      - module load CUDA/11.8.0
+      - module load cuDNN/8.6.0.163-CUDA-11.8.0
+      - source .venv/bin/activate

@@ -12,7 +12,7 @@ EXPERIMENT=$1
 CLUSTER=$2
 SEARCH_SPACE=$3
 CONFIG_NAME=$4
-JOB_NAME="rs_${EXPERIMENT}_${SEARCH_SPACE}"
+JOB_NAME="rs_${EXPERIMENT}_${SEARCH_SPACE}_${CONFIG_NAME}"
 DIRECTORY="rs/${EXPERIMENT}/${SEARCH_SPACE}/${CONFIG_NAME}"
 
 # Create a dedicated directory for this specific experiment run
@@ -24,6 +24,7 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 
 #SBATCH --cpus-per-task=4
 #SBATCH --job-name=${JOB_NAME}
+#SBATCH --account=thes2105
 #SBATCH -t 08:00:00
 #SBATCH --mail-type fail,end
 #SBATCH --mail-user stamatios.chrysanthidis@rwth-aachen.de

@@ -21,3 +21,10 @@ hp_config:
   update_epochs: 20
   n_steps: 32
   normalize_observations: False
+
+nas_config:
+  num_mlp_layers: 3
+  hidden_size: 64
+
+default_hyperparameter:
+  running_time: 6.16

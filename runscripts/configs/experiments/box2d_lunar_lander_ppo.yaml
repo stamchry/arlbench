@@ -25,3 +25,6 @@ nas_config:
   activation: relu
   hidden_size: 256
   num_mlp_layers: 2
+
+default_hyperparameter:
+  running_time: 310  # seconds

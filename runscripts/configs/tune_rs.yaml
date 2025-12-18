@@ -9,14 +9,14 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 5
+    n_trials: 70
     search_space: ${search_space}
     sweeper_kwargs:
       maximize: true
       max_budget: ${environment.n_total_timesteps} 
       max_parallelization: 1 
       job_array_size_limit: 100
-      seeds: [0]
+      seeds: [42, 43, 44, 45, 46]
   run:
     dir: results/rs/${algorithm}_${autorl.env_name}_${search_space.name}/${search_space.seed}/${seed}
   sweep:
@@ -27,7 +27,7 @@ hydra:
 load_checkpoint: ""
 jax_enable_x64: false
 search_space.seed: 0
-seed: 42
+seed: 7
 
 autorl:
   seed: ${seed}

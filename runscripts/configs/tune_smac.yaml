@@ -12,7 +12,7 @@ hydra:
     n_trials: 100
     search_space: ${search_space}
     sweeper_kwargs:
-      seeds: [0, 1]
+      seeds: [42, 43, 44, 45, 46]
       maximize: true
       min_budget: ${environment.n_total_timesteps}
       max_budget: ${environment.n_total_timesteps}
@@ -55,7 +55,7 @@ experiment_name: ""
 load_checkpoint: ""
 smac_seed: 0
 jax_enable_x64: false
-seed: 42
+seed: 7
 
 autorl:
   seed: ${seed}

@@ -8,6 +8,7 @@ hydra:
     partition: c23ms
     cpus_per_task: 8
     mem_per_cpu: 2000M
+    account: thes2105
     setup:
       - module load GCCcore/12.2.0
       - module load Python/3.10.8

@@ -27,7 +27,7 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
-      seeds: [42, 43]
+      seeds: [42, 43, 44, 45, 46]
   run:
     dir: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:

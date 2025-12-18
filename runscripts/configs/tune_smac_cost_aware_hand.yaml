@@ -28,7 +28,7 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
-      seeds: [42, 43]
+      seeds: [42, 43, 44, 45, 46]
   run:
     dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
@@ -38,7 +38,7 @@ hydra:
 
 experiment_name: ""
 load_checkpoint: ""
-smac_seed: 1
+smac_seed: 0
 jax_enable_x64: false
 seed: 7
 

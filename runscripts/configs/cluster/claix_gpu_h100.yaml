@@ -8,6 +8,7 @@ hydra:
     timeout_min: 60
     partition: c23g
     cpus_per_task: 16
+    account: thes2105
     setup:
       - module purge
       - module load GCCcore/12.2.0

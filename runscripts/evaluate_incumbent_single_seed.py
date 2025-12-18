@@ -40,6 +40,7 @@ def run_single_evaluation(incumbent, experiment, cluster, test_seed):
         f"experiments={experiment}",
         f"cluster={cluster}",
         f"autorl.seed={test_seed}",
+        f"+seed={test_seed}",
     ]
     
     # 2. Process Incumbent Parameters

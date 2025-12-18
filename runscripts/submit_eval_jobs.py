@@ -39,15 +39,16 @@ module load cuDNN/8.6.0.163-CUDA-11.8.0"""
     submit_script_path = log_dir / "submit_eval.sh"
     
     script_content = f"""#!/bin/zsh
+#SBATCH --account=thes2105
 #SBATCH --cpus-per-task={cpus_per_task}
 #SBATCH --mem-per-cpu=2000M
 #SBATCH --job-name={job_name}
 #SBATCH --partition={partition}
 {gres_directive}
-#SBATCH -t 00:30:00
+#SBATCH -t 01:00:00
 #SBATCH --output {log_dir}/seed_%a.out
 #SBATCH --error {log_dir}/seed_%a.err
-#SBATCH --array 40-43
+#SBATCH --array 100-109
 
 cd {os.getcwd()}
 
@@ -80,6 +81,7 @@ python runscripts/evaluate_incumbent_single_seed.py \\
     agg_script_path = log_dir / "submit_agg.sh"
     
     agg_content = f"""#!/bin/zsh
+#SBATCH --account=thes2105
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=1000M
 #SBATCH --job-name=agg_{opt_id}

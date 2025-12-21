@@ -40,10 +40,10 @@ hyperparameters:
     type: categorical
     choices: 
       - ${environment.n_total_timesteps}
-  environment.n_steps:
+  environment.n_envs:
     type: categorical
     choices:
-      - ${environment.n_steps}
+      - ${environment.n_envs}
   nas_config.num_mlp_layers:
     type: categorical
     choices:

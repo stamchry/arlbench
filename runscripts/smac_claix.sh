@@ -29,7 +29,7 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 #!/bin/zsh
 
 #SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=2000M
+#SBATCH --partition=c23ms
 #SBATCH --account=thes2105
 #SBATCH --job-name=${JOB_NAME}
 #SBATCH -t 30:00:00
@@ -39,8 +39,6 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 #SBATCH --error $DIRECTORY/log/%A.err
 #SBATCH --array 1,3
 
-# Change to the project directory
-cd /home/aq055502/projects/arlbench-smac-hyper/arlbench
 
 module purge
 module load GCCcore/12.2.0

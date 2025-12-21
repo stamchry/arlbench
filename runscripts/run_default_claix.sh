@@ -22,8 +22,7 @@ mkdir -p "$DIRECTORY/log"
 cat > "$DIRECTORY/submit.sh" <<EOF
 #!/bin/zsh
 
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=2000M
+#SBATCH --cpus-per-task=8
 #SBATCH --account=thes2105
 #SBATCH --job-name=${JOB_NAME}
 #SBATCH -t 01:00:00
@@ -33,7 +32,6 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 # GPU settings if needed (simple check based on cluster name)
 $(if [[ "$CLUSTER" == *"gpu"* ]]; then echo "#SBATCH --partition=c23g"; echo "#SBATCH --gres=gpu:1"; fi)
 
-cd /home/aq055502/projects/arlbench-smac-hyper/arlbench
 
 module purge
 module load GCCcore/12.2.0

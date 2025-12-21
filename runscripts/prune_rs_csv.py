@@ -11,8 +11,11 @@ def find_config_file(experiment_name, config_root):
     exp_lower = experiment_name.lower()
     
     # Specific mapping for the example provided
-    if "cartpole" in exp_lower and "ppo" in exp_lower:
-        return os.path.join(config_root, "cc_cartpole_ppo.yaml")
+    #if "cartpole" in exp_lower and "ppo" in exp_lower:
+    #    return os.path.join(config_root, "cc_cartpole_ppo.yaml")
+
+    if "ant" in exp_lower and "ppo" in exp_lower:
+        return os.path.join(config_root, "brax_ant_ppo.yaml")
         
     # Generic search in config folder
     if os.path.exists(config_root):

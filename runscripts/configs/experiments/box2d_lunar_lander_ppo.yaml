@@ -22,9 +22,9 @@ hp_config:
   normalize_observations: False
 
 nas_config:
-  activation: relu
-  hidden_size: 256
+  activation: tanh
+  hidden_size: 64
   num_mlp_layers: 2
 
 default_hyperparameter:
-  running_time: 310  # seconds
+  running_time: 152

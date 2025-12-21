@@ -17,7 +17,7 @@ def submit_job(experiment, cluster, search_space, opt_id, incumbent_path, log_ba
     # Defaults for CPU (matching claix_cpu.yaml logic)
     partition = "c23ms"
     gres_directive = ""
-    cpus_per_task = 4
+    cpus_per_task = 8
     # Standard CPU modules
     module_loads = """module purge
 module load GCCcore/12.2.0
@@ -27,7 +27,7 @@ module load Python/3.10.8"""
     if "gpu" in cluster:
         partition = "c23g"
         gres_directive = "#SBATCH --gres=gpu:1"
-        cpus_per_task = 8  # Increased slightly for GPU data feeding
+        cpus_per_task = 16  # Increased slightly for GPU data feeding
         # Add CUDA/cuDNN modules required for GPU runs
         module_loads = """module purge
 module load GCCcore/12.2.0
@@ -41,7 +41,6 @@ module load cuDNN/8.6.0.163-CUDA-11.8.0"""
     script_content = f"""#!/bin/zsh
 #SBATCH --account=thes2105
 #SBATCH --cpus-per-task={cpus_per_task}
-#SBATCH --mem-per-cpu=2000M
 #SBATCH --job-name={job_name}
 #SBATCH --partition={partition}
 {gres_directive}

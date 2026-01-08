@@ -10,9 +10,13 @@ defaults:
 hydra:
   sweeper:
     n_trials: 10000
+    budget: ${multiply:${environment.n_total_timesteps},100}
+    budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
       maximize: true
+      min_budget: ${divide:${environment.n_total_timesteps},10}
+      max_budget: ${environment.n_total_timesteps} 
       max_parallelization: 0
       optimizer_kwargs:
         smac_facade:
@@ -22,17 +26,23 @@ hydra:
           total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
           logging_level: 10
           overwrite: true
+        intensifier:
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
+          _partial_: true
+          eta: 2
         scenario:
           seed: ${smac_seed}
           n_trials: ${hydra.sweeper.n_trials}
+          min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
+          max_budget: ${environment.n_total_timesteps}
           deterministic: true
           n_workers: 1
-          output_directory: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+          output_directory: results/smac_mf_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
       seeds: [0,1,2]
   run:
-    dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_mf_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_mf_hand_crafted/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   job:
     chdir: true
 

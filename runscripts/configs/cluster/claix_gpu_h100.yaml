@@ -7,7 +7,7 @@ hydra:
     gres: "gpu:1"
     timeout_min: 60
     partition: c23g
-    cpus_per_task: 16
+    cpus_per_task: 4
     account: thes2105
     setup:
       - module purge
@@ -15,4 +15,4 @@ hydra:
       - module load Python/3.10.8
       - module load CUDA/11.8.0
       - module load cuDNN/8.6.0.163-CUDA-11.8.0
-      - source .venv/bin/activate
+      - source /home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate

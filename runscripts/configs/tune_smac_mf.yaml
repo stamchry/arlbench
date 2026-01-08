@@ -14,7 +14,7 @@ hydra:
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
-      seeds: [42, 43, 44, 45, 46]
+      seeds: [0,1,2]
       maximize: true
       min_budget: ${divide:${environment.n_total_timesteps},10}
       max_budget: ${environment.n_total_timesteps} 
@@ -55,7 +55,7 @@ hydra:
 load_checkpoint: ""
 smac_seed: 0
 jax_enable_x64: false
-seed: 7
+seed: 13
 
 autorl:
   seed: ${seed}

@@ -29,30 +29,25 @@ hyperparameters:
     default_value: 0.5
     log: false
   hp_config.minibatch_size:
-    type: categorical
-    choices: [64, 128, 256, 512]
+    type: ordinal
+    sequence: [64, 128, 256, 512, 1024]
   hp_config.n_steps:
-    type: uniform_int
-    upper: 256
-    lower: 16
-    log: False
+    type: ordinal
+    sequence: [16, 32, 64, 128, 256, 512, 1024, 2048]
   environment.n_envs:
-    type: categorical
-    choices: [4, 8, 16, 32, 64]
+    type: ordinal
+    sequence: [1, 2, 4, 8, 16]
   environment.n_total_timesteps:
-    type: categorical
-    choices: 
-      - ${environment.n_total_timesteps}
+    type: constant
+    value: ${environment.n_total_timesteps}
   hp_config.update_epochs:
-    type: uniform_int
-    upper: 20
-    lower: 1
-    log: False
+    type: ordinal
+    sequence: [3, 4, 5, 10, 15, 20]
   nas_config.num_mlp_layers:
     type: uniform_int
     upper: 3
     lower: 1
     log: False
   nas_config.hidden_size:
-    type: categorical
-    choices: [32, 64, 128]
+    type: ordinal
+    sequence: [32, 64, 128, 256]

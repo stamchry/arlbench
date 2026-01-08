@@ -27,4 +27,4 @@ nas_config:
   num_mlp_layers: 2
 
 default_hyperparameter:
-  running_time: 152
+  running_time: 226

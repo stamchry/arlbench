@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 1000
+    n_trials: 10000
     search_space: ${search_space}
     sweeper_kwargs:
       maximize: true
@@ -27,7 +27,7 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
-      seeds: [42, 43, 44, 45, 46]
+      seeds: [0,1,2]
   run:
     dir: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
@@ -39,7 +39,7 @@ experiment_name: ""
 load_checkpoint: ""
 smac_seed: 0
 jax_enable_x64: false
-seed: 7
+seed: 13
 
 autorl:
   seed: ${seed}

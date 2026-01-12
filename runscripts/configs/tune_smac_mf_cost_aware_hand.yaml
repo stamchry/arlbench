@@ -33,6 +33,7 @@ hydra:
         scenario:
           seed: ${smac_seed}
           n_trials: ${hydra.sweeper.n_trials}
+          name: ${experiment_name}
           min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
           max_budget: ${environment.n_total_timesteps}
           deterministic: true

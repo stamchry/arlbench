@@ -23,10 +23,16 @@ hydra:
           overwrite: true
         scenario:
           seed: ${smac_seed}
+          name: ${experiment_name}
           n_trials: ${hydra.sweeper.n_trials}
           deterministic: true
           n_workers: 1
           output_directory: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+        intensifier:
+          _target_: smac.intensifier.Intensifier
+          _partial_: true
+          max_config_calls: 1   # the number of seeds
+          seed: ${smac_seed}
       seeds: [0,1,2]
   run:
     dir: results/smac_rf/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}

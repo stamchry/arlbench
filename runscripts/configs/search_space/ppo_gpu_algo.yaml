@@ -29,26 +29,20 @@ hyperparameters:
     default_value: 0.5
     log: false
   hp_config.minibatch_size:
-    type: categorical
-    choices:
-      - ${hp_config.minibatch_size}
+    type: constant
+    value: ${hp_config.minibatch_size}
   hp_config.update_epochs:
-    type: categorical
-    choices:
-      - ${hp_config.update_epochs}
+    type: constant
+    value: ${hp_config.update_epochs}
   environment.n_total_timesteps:
-    type: categorical
-    choices: 
-      - ${environment.n_total_timesteps}
+    type: constant
+    value: ${environment.n_total_timesteps}
   environment.n_envs:
-    type: categorical
-    choices:
-      - ${environment.n_envs}
+    type: constant
+    value: ${environment.n_envs}
   nas_config.num_mlp_layers:
-    type: categorical
-    choices:
-      - ${nas_config.num_mlp_layers}
+    type: constant
+    value: ${nas_config.num_mlp_layers}
   nas_config.hidden_size:
-    type: categorical
-    choices:
-      - ${nas_config.hidden_size}
+    type: constant
+    value: ${nas_config.hidden_size}

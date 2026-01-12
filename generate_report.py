@@ -41,6 +41,7 @@ EXPERIMENT_MAPPING = {
 _method_colors = sns.color_palette("Dark2", len(METHOD_LABELS))
 METHOD_PALETTE = dict(zip(METHOD_LABELS.values(), _method_colors))
 
+FIGURE_SIZE = (14, 8) 
 sns.set_style("whitegrid")
 
 # ---------------------------------------------------------
@@ -230,7 +231,7 @@ def plot_incumbent_trajectories(pdf, df_runhistory, env):
         # 4. Plotting
         df_plot = pd.DataFrame(resampled_rows)
         
-        plt.figure(figsize=(12, 7))
+        plt.figure(figsize=FIGURE_SIZE)
         
         # Identify available methods to sort the legend correctly
         current_methods = df_plot['optimization_method_label'].unique()
@@ -272,7 +273,7 @@ def plot_boxplots(pdf, df_results, env):
     plot_order = [METHOD_LABELS[m] for m in METHOD_ORDER if METHOD_LABELS[m] in env_data['optimization_method_label'].unique()]
 
     # 1. Mean Plot
-    plt.figure(figsize=(14, 8))
+    plt.figure(figsize=FIGURE_SIZE)
     sns.boxplot(
         data=mean_agg, x='optimization_method_label', y='performance', hue='search_space_label',
         palette="Set2", showfliers=True, order=plot_order
@@ -287,7 +288,7 @@ def plot_boxplots(pdf, df_results, env):
     plt.close()
 
     # 2. Median Plot
-    plt.figure(figsize=(14, 8))
+    plt.figure(figsize=FIGURE_SIZE)
     sns.boxplot(
         data=median_agg, x='optimization_method_label', y='performance', hue='search_space_label',
         palette="Set2", showfliers=True, order=plot_order
@@ -307,29 +308,48 @@ def plot_costs(pdf, df_runhistory, env):
     """Comparison of individual trial costs (runtimes)."""
     env_data = df_runhistory[df_runhistory['experiment'] == env]
     if env_data.empty: return
+
+    # Filter for methods present in METHOD_ORDER only
+    env_data = env_data[env_data['method'].isin(METHOD_ORDER)]
+    if env_data.empty: return
+
     unique_spaces = env_data['search_space'].dropna().unique()
 
     for space_code in unique_spaces:
         subset = env_data[env_data['search_space'] == space_code].copy()
-        # Ensure we use labels for consistent coloring
         subset['method_label'] = subset['method'].map(METHOD_LABELS).fillna(subset['method'])
         space_label = SEARCH_SPACE_LABELS.get(space_code, space_code)
         
-        # Separate all methods containing 'mf'
+        # Separate datasets
         mf_data = subset[subset['method'].str.contains('mf')]
         std_data = subset[~subset['method'].str.contains('mf')]
 
-        fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-        
+        # Determine how many plots to draw
+        active_plots = []
         if not std_data.empty:
-            sns.lineplot(data=std_data, x='config_id', y='cost', hue='method_label', palette=METHOD_PALETTE, ax=axes[0])
-            axes[0].set_title("Standard Methods Cost per Trial")
-            axes[0].set_ylabel("Cost (s)")
-        
+            active_plots.append(("Standard Methods", std_data))
         if not mf_data.empty:
-            sns.lineplot(data=mf_data, x='config_id', y='cost', hue='method_label', palette=METHOD_PALETTE, ax=axes[1])
-            axes[1].set_title("Multifidelity Methods Cost per Trial")
-        
+            active_plots.append(("Multifidelity Methods", mf_data))
+
+        if not active_plots:
+            continue
+
+        fig, axes = plt.subplots(1, len(active_plots), figsize=FIGURE_SIZE, squeeze=False)
+        axes = axes.flatten()
+
+        for i, (title, data) in enumerate(active_plots):
+            # Calculate hue order for this specific plot
+            current_methods = data['method_label'].unique()
+            plot_order = [METHOD_LABELS[m] for m in METHOD_ORDER if METHOD_LABELS[m] in current_methods]
+
+            sns.lineplot(
+                data=data, x='config_id', y='cost', hue='method_label', 
+                hue_order=plot_order, palette=METHOD_PALETTE, ax=axes[i]
+            )
+            axes[i].set_title(f"{title} Cost per Trial")
+            axes[i].set_ylabel("Cost (s)")
+            axes[i].set_xlabel("Configuration ID")
+
         plt.suptitle(f"Trial Runtime Comparison: {env}\n({space_label})", fontsize=16)
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         pdf.savefig()
@@ -349,7 +369,7 @@ def plot_number_of_configurations_boxplots(pdf, df_runhistory, env):
     current_methods = counts['optimization_method_label'].unique()
     plot_order = [METHOD_LABELS[m] for m in METHOD_ORDER if METHOD_LABELS[m] in current_methods]
 
-    plt.figure(figsize=(14, 8))
+    plt.figure(figsize=FIGURE_SIZE)
     sns.boxplot(
         data=counts, x='optimization_method_label', y='num_configs', hue='search_space_label',
         palette="Set2", showfliers=True, order=plot_order

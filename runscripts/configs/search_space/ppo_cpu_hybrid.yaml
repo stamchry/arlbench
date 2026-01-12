@@ -33,7 +33,7 @@ hyperparameters:
     sequence: [64, 128, 256, 512, 1024]
   hp_config.n_steps:
     type: ordinal
-    sequence: [16, 32, 64, 128, 256, 512, 1024, 2048]
+    sequence: [32, 64, 128, 256, 512, 1024, 2048]
   environment.n_envs:
     type: ordinal
     sequence: [1, 2, 4, 8, 16]
@@ -41,8 +41,10 @@ hyperparameters:
     type: constant
     value: ${environment.n_total_timesteps}
   hp_config.update_epochs:
-    type: ordinal
-    sequence: [3, 4, 5, 10, 15, 20]
+    type: uniform_int
+    upper: 20
+    lower: 1
+    log: false
   nas_config.num_mlp_layers:
     type: uniform_int
     upper: 3
@@ -50,4 +52,4 @@ hyperparameters:
     log: False
   nas_config.hidden_size:
     type: ordinal
-    sequence: [32, 64, 128, 256]
+    sequence: [32, 64, 128]

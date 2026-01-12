@@ -11,7 +11,7 @@ hyperparameters:
     upper: 0.05
     lower: 0.001
     default_value: 0.01
-    log: True
+    log: true
   hp_config.gae_lambda:
     type: uniform_float
     upper: 0.9999
@@ -33,23 +33,25 @@ hyperparameters:
     value: ${environment.n_total_timesteps}
   hp_config.minibatch_size:
     type: ordinal
-    sequence: [64, 128, 256, 512, 1024, 2048, 4096, 8192]
+    sequence: [256, 512, 1024, 2048, 4096]
   hp_config.n_steps:
-    type: ordinal
-    sequence: [3, 5, 8, 16, 32, 64]
+    type: uniform_int
+    upper: 16
+    lower: 1
+    log: false
   environment.n_envs:
     type: ordinal
-    sequence: [64, 128, 256, 512, 1024, 2048, 4096]
+    sequence: [512, 1024, 2048, 4096, 8192]
   hp_config.update_epochs:
     type: uniform_int
     upper: 10
     lower: 1
-    log: False
+    log: false
   nas_config.num_mlp_layers:
     type: uniform_int
     upper: 3
     lower: 1
-    log: False
+    log: false
   nas_config.hidden_size:
     type: ordinal
     sequence: [64, 128, 256, 512]

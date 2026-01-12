@@ -27,4 +27,4 @@ nas_config:
   hidden_size: 64
 
 default_hyperparameter:
-  running_time: 5.1
+  running_time: 5.96

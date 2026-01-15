@@ -3,7 +3,7 @@ defaults:
   - /cluster: local
   - /algorithm: ppo
   - environment: cc_cartpole
-  - search_space: ppo_cpu_algo
+  - search_space: ppo_cpu_hybrid
   - /experiments: cc_cartpole_ppo
   - override hydra/sweeper: HyperSMAC
 
@@ -18,26 +18,31 @@ hydra:
         smac_facade:
           _target_: smac.facade.cost_aware_facade.CostAwareFacade
           _partial_: true
-          rl_hand_crafted_cost_model: True
           total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
           logging_level: 10
           overwrite: true
         scenario:
           seed: ${smac_seed}
+          name: ${experiment_name}
           n_trials: ${hydra.sweeper.n_trials}
           deterministic: true
           n_workers: 1
-          output_directory: results/smac_hand_crafted_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+          output_directory: results/smac_rf_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+        intensifier:
+          _target_: smac.intensifier.Intensifier
+          _partial_: true
+          max_config_calls: 1   # the number of seeds
+          seed: ${smac_seed}
         initial_design: #We explicitly set the number of initial design points
           _target_: smac.facade.blackbox_facade.BlackBoxFacade.get_initial_design
           _partial_: true
           n_configs: 8
           max_ratio: 1.0
-      seeds: [0]
+      seeds: [0,1,2]
   run:
-    dir: results/smac_hand_crafted_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_rf_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac_hand_crafted_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_rf_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   job:
     chdir: true
 

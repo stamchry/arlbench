@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 100
+    n_trials: 10000
     search_space: ${search_space}
     sweeper_kwargs:
       seeds: [0,1,2]

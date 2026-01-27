@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 100
+    n_trials: 10000
     search_space: ${search_space}
     sweeper_kwargs:
       maximize: true
@@ -21,7 +21,7 @@ hydra:
           _partial_: true
           rl_hand_crafted_cost_model: True
           total_resource_budget: ${multiply:${multiply:${default_hyperparameter.running_time}, ${len:${hydra.sweeper.sweeper_kwargs.seeds}}}, 50}
-          #logging_level: 10
+          logging_level: 10
           overwrite: true
         scenario:
           seed: ${smac_seed}
@@ -38,9 +38,9 @@ hydra:
         initial_design: #We explicitly set the number of initial design points
           _target_: smac.facade.blackbox_facade.BlackBoxFacade.get_initial_design
           _partial_: true
-          n_configs: 1
+          n_configs: 8
           max_ratio: 1.0
-      seeds: [0,1]
+      seeds: [0,1,2]
   run:
     dir: results/smac_hand_crafted_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:

@@ -1,0 +1,28 @@
+# @package _global_
+defaults:
+  - override /environment: minatar_space_invaders
+  - override /algorithm: ppo
+  - override /search_space: ppo_gpu_hybrid
+
+# https://github.com/RobertTLange/gymnax-blines/blob/main/agents/SpaceInvaders-MinAtar/ppo.yaml
+environment:
+  n_envs: 64
+  n_total_timesteps: 10000000
+
+hp_config:
+  minibatch_size: 8
+  clip_eps: 0.2
+  ent_coef: 0.01
+  learning_rate: 5e-4
+  update_epochs: 4
+  n_steps: 128
+  vf_coef: 0.5
+  normalize_observations: False
+  gae_lambda: 0.95
+  gamma: 0.999
+  max_grad_norm: 0.5
+
+nas_config:
+  activation: relu
+  hidden_size: 256
+  num_mlp_layers: 2

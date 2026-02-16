@@ -7,6 +7,7 @@ import logging
 import traceback
 
 import hydra
+import numpy as np
 import jax
 import jax.numpy as jnp
 from omegaconf import OmegaConf, DictConfig
@@ -81,20 +82,27 @@ def main(cfg: DictConfig):
     train_state = runner_state.train_state
 
     # -------------------------------------------------------------------------
-    # 5. Prepare Evaluation Environment
+    # 5. Prepare TRAINING Environment (The Batch)
     # -------------------------------------------------------------------------
     rng = jax.random.PRNGKey(cfg.seed)
-    rng, reset_rng = jax.random.split(rng)
     
-    # Check for eval_env (PPO standard)
-    if not hasattr(algo, "eval_env") or algo.eval_env is None:
-        logger.warning("eval_env missing, falling back to training env.")
-        target_env = algo.env
+    # We want to measure the exact environment used for training (batch size = n_envs)
+    target_env = algo.env 
+    
+    # Use the actual state from the runner (already initialized with n_envs)
+    env_state = runner_state.env_state
+    
+    # Retrieve the observation batch (shape: [n_envs, obs_dim])
+    # Note: Depending on implementation, obs might be in env_state or separate
+    if hasattr(runner_state, 'env_state') and hasattr(runner_state.env_state, 'obs'):
+         obs = runner_state.env_state.obs
     else:
-        target_env = algo.eval_env
-        
-    # The GymnaxEnv wrapper in this codebase returns (env_state, obs)
-    env_state, obs = target_env.reset(reset_rng)
+         # Fallback: Reset the batch env
+         rng, reset_rng = jax.random.split(rng)
+         # algo.env.reset typically returns a batch of states/obs
+         env_state, obs = target_env.reset(reset_rng)
+
+    logger.info(f"Corrected Benchmark Obs Shape: {obs.shape}") # Should be (1024, ...) for Ant
 
     # Robust logging for observation shape
     if hasattr(obs, 'shape'):
@@ -140,23 +148,20 @@ def main(cfg: DictConfig):
     if inference_time == 0.0: inference_time = 1e-8
 
     # -------------------------------------------------------------------------
-    # Metric 2: Environment Step Time
+    # Metric 2: Environment Step Time (Batch)
     # -------------------------------------------------------------------------
-    # Generate action for step
+    # Generate action batch
     rng, act_rng = jax.random.split(rng)
     action = algo.predict(runner_state, obs, act_rng, deterministic=True)
     
-    # Abstract definition: def step(self, env_state: Any, action: Any, rng: PRNGKey)
-    def env_step_with_fresh_inputs(rng_key):
-        rng1, rng2 = jax.random.split(rng_key)
-        state, obs = target_env.reset(rng1)
-        action = algo.predict(runner_state, obs, rng2, deterministic=True)
-        return target_env.step(state, action, rng2)
+    def simple_step_fn(key, state, act):
+        # Just step, don't reset!
+        return target_env.step(state, act, key)
 
     env_step_time = measure_fn(
-        "Environment Step",
-        jax.jit(env_step_with_fresh_inputs),
-        rng
+        "Environment Step (Batch)",
+        jax.jit(simple_step_fn),
+        rng, env_state, action
     )
 
     # -------------------------------------------------------------------------
@@ -177,7 +182,13 @@ def main(cfg: DictConfig):
     
     # 2. Use RANDOM data (Avoids Zero-optimization shortcuts)
     rng, data_rng = jax.random.split(rng)
-    dummy_batch = jax.random.normal(data_rng, (batch_size, *feature_shape), dtype=dtype)
+    
+    # If dtype is not a float (e.g. uint8), force it to float32 for random.normal
+    gen_dtype = dtype
+    if not np.issubdtype(dtype, np.floating) and not np.issubdtype(dtype, np.complexfloating):
+        gen_dtype = jnp.float32
+
+    dummy_batch = jax.random.normal(data_rng, (batch_size, *feature_shape), dtype=gen_dtype)
 
     # 3. Handle RNNs (Hidden States)
     init_hstate = None

@@ -1,12 +1,12 @@
 # @package _global_
 defaults:
-  - override /environment: cc_cartpole    
+  - override /environment: cc_pendulum    
   - override /algorithm: ppo
   - override /search_space: ppo_cpu_hybrid
 
-# https://huggingface.co/sb3/ppo-CartPole-v1
+# https://huggingface.co/sb3/ppo-Pendulum-v1
 environment:
-  n_envs: 8
+  n_envs: 4
   n_total_timesteps: 100000
 
 hp_config:
@@ -14,22 +14,14 @@ hp_config:
   # since we do not support clip_eps schedules we set clip_eps to a fixed value
   clip_eps: 0.2
   ent_coef: 0.0
-  gae_lambda: 0.8
-  gamma: 0.98
+  gae_lambda: 0.95
+  gamma: 0.9
   # since we do not support learning rate schedules we set learning_rate to a fixed value
   learning_rate: 0.001
-  update_epochs: 20
-  n_steps: 32
+  update_epochs: 10
+  n_steps: 1024
   normalize_observations: False
 
 nas_config:
-  num_mlp_layers: 3
+  activation: tanh
   hidden_size: 64
-
-default_hyperparameter:
-  running_time: 5.96
-
-profiling:
-  env_step_time: 0.00003250
-  inference_time: 0.00003492
-  grad_backprop_time: 0.00026325

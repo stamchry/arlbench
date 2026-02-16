@@ -45,3 +45,12 @@ hyperparameters:
   nas_config.hidden_size:
     type: constant
     value: ${nas_config.hidden_size}
+  profiling.env_step_time:
+    type: constant
+    value: ${profiling.env_step_time}
+  profiling.inference_time:
+    type: constant
+    value: ${profiling.inference_time}
+  profiling.grad_backprop_time:
+    type: constant
+    value: ${profiling.grad_backprop_time}

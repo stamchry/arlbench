@@ -28,3 +28,8 @@ nas_config:
 
 default_hyperparameter:
   running_time: 253
+
+profiling:
+  env_step_time: 0.00069632
+  inference_time: 0.00003129
+  grad_backprop_time: 0.00016668

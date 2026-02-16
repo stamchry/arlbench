@@ -17,6 +17,8 @@ hydra:
 jax_enable_x64: false
 load_checkpoint: ""
 
+seed: 0
+
 autorl:
   seed: 42
   env_framework: ${environment.framework}

@@ -32,28 +32,28 @@ hyperparameters:
     value: ${environment.n_total_timesteps}
   hp_config.minibatch_size:
     type: ordinal
-    sequence: [256, 512, 1024, 2048, 4096]
+    sequence: [256, 512, 1024, 2048]
   hp_config.n_steps:
     type: uniform_int
     upper: 16
-    lower: 1
+    lower: 4
     log: false
   environment.n_envs:
     type: ordinal
-    sequence: [512, 1024, 2048, 4096, 8192]
+    sequence: [1024, 2048, 4096]
   hp_config.update_epochs:
     type: uniform_int
-    upper: 10
-    lower: 1
+    upper: 12
+    lower: 3
     log: false
   nas_config.num_mlp_layers:
     type: uniform_int
     upper: 3
-    lower: 1
+    lower: 2
     log: false
   nas_config.hidden_size:
     type: ordinal
-    sequence: [64, 128, 256, 512]
+    sequence: [128, 256, 512]
   profiling.env_step_time:
     type: constant
     value: ${profiling.env_step_time}

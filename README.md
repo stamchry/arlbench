@@ -1,3 +1,18 @@
+# ARLBench - Thesis Experimental Configurations
+
+This is a fork of [ARLBench](https://github.com/automl/arlbench), adapted for cost-aware HPO research in Reinforcement Learning.
+
+> ### 🎓 Master Thesis Research
+> This repository contains the environment configurations and search spaces used for the thesis:
+> **"Cost-Aware Bayesian Optimisation for Reinforcement Learning" (2026)**.
+> 
+> **The exact snapshot used for the results is preserved here:**
+> 👉 **[Release v1.0-thesis](https://github.com/stamchry/arlbench/releases/tag/v1.0-thesis)**
+>
+> **Related Repositories:**
+> * [SMAC3 (Optimizer Implementation)](https://github.com/stamchry/SMAC3/releases/tag/v1.0-thesis)
+> * [HyperSweeper (Orchestration)](https://github.com/stamchry/hypersweeper/releases/tag/v1.0-thesis)
+
 <p align="center">
     <a href="./docs/images/logo_lm.png#gh-light-mode-only">
         <img src="./docs/images/logo_lm.png#gh-light-mode-only" alt="ARLBench Logo" width="80%"/>

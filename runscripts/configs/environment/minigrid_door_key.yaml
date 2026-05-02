@@ -1,6 +1,6 @@
-name: "MiniGrid-DoorKey-5x5"
+name: "MiniGrid-DoorKey-8x8"
 framework: "xland"
-n_total_timesteps: 100000
+n_total_timesteps: 500000
 kwargs: {}
 eval_kwargs: {}
 cnn_policy: False

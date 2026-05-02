@@ -33,6 +33,9 @@ hyperparameters:
   hp_config.update_epochs:
     type: constant
     value: ${hp_config.update_epochs}
+  hp_config.n_steps:
+    type: constant
+    value: ${hp_config.n_steps}
   environment.n_total_timesteps:
     type: constant
     value: ${environment.n_total_timesteps}

@@ -1,31 +1,30 @@
 # @package _global_
 defaults:
-  - override /environment: cc_pendulum    
-  - override /algorithm: ppo
+  - override /environment: cc_mountain_car    
+  - override /algorithm: ppo   
   - override /search_space: ppo_cpu_hybrid
 
-# https://huggingface.co/sb3/ppo-Pendulum-v1
+# https://huggingface.co/sb3/ppo-CartPole-v1
 environment:
-  n_envs: 4
-  n_total_timesteps: 100000
+  n_envs: 8
+  n_total_timesteps: 1000000
 
 hp_config:
   minibatch_size: 256
   # since we do not support clip_eps schedules we set clip_eps to a fixed value
   clip_eps: 0.2
   ent_coef: 0.0
-  gae_lambda: 0.95
-  gamma: 0.9
+  gae_lambda: 0.98
+  gamma: 0.99
   # since we do not support learning rate schedules we set learning_rate to a fixed value
   learning_rate: 0.001
-  update_epochs: 10
-  n_steps: 1024
+  update_epochs: 4
+  n_steps: 16
   normalize_observations: False
 
 nas_config:
-  activation: tanh
-  hidden_size: 64
   num_mlp_layers: 2
+  hidden_size: 64
 
 default_hyperparameter:
   running_time: 5.96

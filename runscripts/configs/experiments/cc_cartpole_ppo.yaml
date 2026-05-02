@@ -23,7 +23,7 @@ hp_config:
   normalize_observations: False
 
 nas_config:
-  num_mlp_layers: 3
+  num_mlp_layers: 2
   hidden_size: 64
 
 default_hyperparameter:

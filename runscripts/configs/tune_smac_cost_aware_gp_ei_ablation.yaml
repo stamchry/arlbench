@@ -28,11 +28,14 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_gp/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+        acquisition_function: #We explicitly set the acquisition function to EI for this ablation
+          _target_: smac.facade.blackbox_facade.BlackBoxFacade.get_acquisition_function
+          _partial_: true
       seeds: [0,1,2]
   run:
-    dir: results/smac_gp/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_gp_ei_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac_gp/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_gp_ei_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   job:
     chdir: true
 

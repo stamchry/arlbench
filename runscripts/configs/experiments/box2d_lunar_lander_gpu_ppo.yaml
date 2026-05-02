@@ -1,12 +1,12 @@
 # @package _global_
 defaults:
-  - override /environment: brax_ant    
+  - override /environment: box2d_lunar_lander    
   - override /algorithm: ppo
   - override /search_space: ppo_gpu_hybrid
 
 environment:
   n_envs: 2048
-  n_total_timesteps: 50000000
+  n_total_timesteps: 10000000
 
 hp_config:
   clip_eps: 0.2
@@ -26,9 +26,9 @@ nas_config:
   num_mlp_layers: 2
 
 default_hyperparameter:
-  running_time: 168
+  running_time: 253
 
 profiling:
-  env_step_time: 0.00477655
-  inference_time: 0.00026337
-  grad_backprop_time: 0.00054171
+  env_step_time: 0.00069632
+  inference_time: 0.00003129
+  grad_backprop_time: 0.00016668

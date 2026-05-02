@@ -5,11 +5,10 @@ defaults:
 hydra:
   launcher:
     gres: "gpu:1"
-    timeout_min: 80
+    timeout_min: 15
     partition: c23g
     cpus_per_task: 4
-    account: p0021208
-    array_parallelism: 5
+    account: thes2105
     setup:
       - module purge
       - module load GCCcore/12.2.0

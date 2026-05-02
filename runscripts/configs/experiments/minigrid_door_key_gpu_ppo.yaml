@@ -6,17 +6,25 @@ defaults:
 
 # https://huggingface.co/sb3/ppo-PongNoFrameskip-v4
 environment:
-  n_envs: 8
+  n_envs: 2048
   n_total_timesteps: 1000000
 
 hp_config:
-  minibatch_size: 64
+  minibatch_size: 512
   clip_eps: 0.2
   ent_coef: 0.0
   gamma: 0.99
   gae_lambda: 0.98
   learning_rate: 0.00025
-  update_epochs: 10
-  n_steps: 32
+  update_epochs: 7
+  n_steps: 10
   vf_coef: 0.5
   normalize_observations: True
+
+default_hyperparameter:
+  running_time: 21.63
+
+profiling:
+  env_step_time: 0.00045795
+  inference_time: 0.00013731
+  grad_backprop_time: 0.00051875

@@ -28,11 +28,16 @@ hydra:
           deterministic: true
           n_workers: 1
           output_directory: results/smac_gp/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/smac_output
+        initial_design: #We explicitly set the number of initial design points
+          _target_: smac.facade.blackbox_facade.BlackBoxFacade.get_initial_design
+          _partial_: true
+          n_configs: 8
+          max_ratio: 1.0
       seeds: [0,1,2]
   run:
-    dir: results/smac_gp/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_gp_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac_gp/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
+    dir: results/smac_gp_ablation/${algorithm}_${autorl.env_name}_${search_space.name}/${smac_seed}/${seed}
   job:
     chdir: true
 

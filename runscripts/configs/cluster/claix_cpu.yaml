@@ -4,10 +4,10 @@ defaults:
 
 hydra:
   launcher:
-    timeout_min: 90
+    timeout_min: 30
     partition: c23ms
     cpus_per_task: 4
-    account: p0021208
+    account: thes2105
     setup:
       - module load GCCcore/12.2.0
       - module load Python/3.10.8

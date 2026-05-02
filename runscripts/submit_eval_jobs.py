@@ -17,7 +17,7 @@ def submit_job(experiment, cluster, search_space, opt_id, incumbent_path, log_ba
     # Defaults for CPU (matching claix_cpu.yaml logic)
     partition = "c23ms"
     gres_directive = ""
-    cpus_per_task = 8
+    cpus_per_task = 4
     # Standard CPU modules
     module_loads = """module purge
 module load GCCcore/12.2.0
@@ -27,7 +27,7 @@ module load Python/3.10.8"""
     if "gpu" in cluster:
         partition = "c23g"
         gres_directive = "#SBATCH --gres=gpu:1"
-        cpus_per_task = 16  # Increased slightly for GPU data feeding
+        cpus_per_task = 4  # Increased slightly for GPU data feeding
         # Add CUDA/cuDNN modules required for GPU runs
         module_loads = """module purge
 module load GCCcore/12.2.0
@@ -44,7 +44,7 @@ module load cuDNN/8.6.0.163-CUDA-11.8.0"""
 #SBATCH --job-name={job_name}
 #SBATCH --partition={partition}
 {gres_directive}
-#SBATCH -t 01:00:00
+#SBATCH -t 00:12:00
 #SBATCH --output {log_dir}/seed_%a.out
 #SBATCH --error {log_dir}/seed_%a.err
 #SBATCH --array 100-109
@@ -52,7 +52,7 @@ module load cuDNN/8.6.0.163-CUDA-11.8.0"""
 cd {os.getcwd()}
 
 {module_loads}
-source .venv/bin/activate
+source /home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
 
 echo "Evaluating Optimization ID {opt_id} on Test Seed $SLURM_ARRAY_TASK_ID"
 
@@ -91,7 +91,7 @@ python runscripts/evaluate_incumbent_single_seed.py \\
 cd {os.getcwd()}
 module load GCCcore/12.2.0
 module load Python/3.10.8
-source .venv/bin/activate
+source /home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
 
 echo "Aggregating results for {opt_id}..."
 python runscripts/aggregate_results.py --folder "{result_save_path}"

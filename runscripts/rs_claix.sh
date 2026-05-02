@@ -25,19 +25,20 @@ cat > "$DIRECTORY/submit.sh" <<EOF
 #SBATCH --cpus-per-task=4
 #SBATCH --job-name=${JOB_NAME}
 #SBATCH --account=thes2105
-#SBATCH -t 08:00:00
+#SBATCH --partition=c23ms
+#SBATCH -t 48:00:00
 #SBATCH --mail-type fail,end
 #SBATCH --mail-user stamatios.chrysanthidis@rwth-aachen.de
 #SBATCH --output $DIRECTORY/log/%A.out
 #SBATCH --error $DIRECTORY/log/%A.err
-#SBATCH --array 1,3
+#SBATCH --array 42,43,44
 
 
 
 module purge
 module load GCCcore/12.2.0
 module load Python/3.10.8
-source .venv/bin/activate
+source /home/aq055502/projects/arlbench-smac-hyper/arlbench/.venv/bin/activate
 
 echo "Starting SMAC optimization for seed \$SLURM_ARRAY_TASK_ID"
 

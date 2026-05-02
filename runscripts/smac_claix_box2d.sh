@@ -1,14 +1,41 @@
 #!/bin/zsh
 
-#runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_hand
-#runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_rf
-#runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac
-runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_mf
-#runscripts/rs_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_rs
+# Random Search
+runscripts/rs_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_rs
+runscripts/rs_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_rs
 
-#runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_hand
-#runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_rf
-#runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac
-runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_mf
-#runscripts/rs_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_rs
+# Base SMAC
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac
 
+# Cost-Aware (RF)
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_rf
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_rf
+
+# Cost-Aware (GP)
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_gp
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_gp
+
+# Cost-Aware (Symbolic)
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_symbolic_cpu
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_symbolic_cpu
+
+# Ablation Study - Initial Design
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_rf_initial_design_ablation
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_rf_initial_design_ablation
+
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_gp_initial_design_ablation
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_gp_initial_design_ablation
+
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_symbolic_cpu_initial_design_ablation
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_symbolic_cpu_initial_design_ablation
+
+# Ablation Study - Acquisition Function
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_rf_ei_ablation
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_rf_ei_ablation
+
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_gp_ei_ablation
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_gp_ei_ablation
+
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_hybrid tune_smac_cost_aware_symbolic_cpu_ei_ablation
+runscripts/smac_claix.sh box2d_lunar_lander_ppo claix_cpu ppo_cpu_algo tune_smac_cost_aware_symbolic_cpu_ei_ablation

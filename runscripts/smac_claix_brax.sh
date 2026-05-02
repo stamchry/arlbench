@@ -1,14 +1,41 @@
 #!/bin/zsh
 
-#runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_hand
-#runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_rf
-#runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac
-runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_mf
-#runscripts/rs_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_rs
+# Random Search
+runscripts/rs_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_rs
+runscripts/rs_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_rs
 
-#runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_hand
-#runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_rf
-#runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac
-runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_mf
-#runscripts/rs_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_rs
+# Base SMAC
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac
 
+# Cost-Aware (RF)
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_rf
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_rf
+
+# Cost-Aware (GP)
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_gp
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_gp
+
+# Cost-Aware (Symbolic)
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_symbolic_gpu
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_symbolic_gpu
+
+# Ablation Study - Initial Design
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_rf_initial_design_ablation
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_rf_initial_design_ablation
+
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_gp_initial_design_ablation
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_gp_initial_design_ablation
+
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_symbolic_gpu_initial_design_ablation
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_symbolic_gpu_initial_design_ablation
+
+# Ablation Study - Acquisition Function
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_rf_ei_ablation
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_rf_ei_ablation
+
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_gp_ei_ablation
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_gp_ei_ablation
+
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_hybrid tune_smac_cost_aware_symbolic_gpu_ei_ablation
+runscripts/smac_claix.sh brax_ant_ppo claix_gpu_h100 ppo_gpu_algo tune_smac_cost_aware_symbolic_gpu_ei_ablation

@@ -113,7 +113,7 @@ def main(cfg: DictConfig):
     # -------------------------------------------------------------------------
     # 6. Helper Measurement Logic
     # -------------------------------------------------------------------------
-    def measure_fn(name, fn, *args, n_warmup=10, n_iter=100, **kwargs):
+    def measure_fn(name, fn, *args, n_warmup=100, n_iter=100000, **kwargs):
         logger.info(f"Measuring {name}...")
         try:
             # Warmup
@@ -121,26 +121,37 @@ def main(cfg: DictConfig):
                 out = fn(*args, **kwargs)
                 jax.block_until_ready(out)
             
-            # Measurement
-            start = time.time()
+            # Measurement - collect individual timings
+            times = []
             for _ in range(n_iter):
+                start = time.time()
                 out = fn(*args, **kwargs)
                 jax.block_until_ready(out)
-            end = time.time()
+                end = time.time()
+                times.append(end - start)
             
-            avg_time = (end - start) / n_iter
-            logger.info(f"  > Avg time for {name}: {avg_time:.8f} s")
-            return avg_time
+            times = np.array(times)
+            avg_time = np.mean(times)
+            std_dev = np.std(times)
+            cv = std_dev / avg_time if avg_time > 0 else 0.0  # Coefficient of Variation
+            
+            # Compute percentiles to show distribution
+            p5, p25, p50, p75, p95 = np.percentile(times, [5, 25, 50, 75, 95])
+            
+            logger.info(f"  > Avg time for {name}: {avg_time:.8f} s (±{std_dev:.8f} s, CV={cv:.4f})")
+            logger.info(f"     Percentiles [5%, 25%, 50%, 75%, 95%]: [{p5:.8f}, {p25:.8f}, {p50:.8f}, {p75:.8f}, {p95:.8f}] s")
+            
+            return avg_time, std_dev, cv, (p5, p25, p50, p75, p95)
         except Exception as e:
             logger.error(f"Failed to measure {name}: {e}")
             traceback.print_exc()
-            return 0.0
+            return 0.0, 0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0)
 
     # -------------------------------------------------------------------------
     # Metric 1: Inference Time
     # -------------------------------------------------------------------------
     
-    inference_time = measure_fn(
+    inference_time, inference_std, inference_cv, inference_percentiles = measure_fn(
         "Inference (predict)",
         jax.jit(algo.predict, static_argnames=("deterministic",)),
         runner_state, obs, rng, deterministic=True
@@ -158,15 +169,13 @@ def main(cfg: DictConfig):
         # Just step, don't reset!
         return target_env.step(state, act, key)
 
-    env_step_time = measure_fn(
+    env_step_time, env_step_std, env_step_cv, env_step_percentiles = measure_fn(
         "Environment Step (Batch)",
         jax.jit(simple_step_fn),
         rng, env_state, action
     )
 
-    # -------------------------------------------------------------------------
-    # Metric 3: Gradient Backprop Time
-    # -------------------------------------------------------------------------
+
     
     # 1. Determine Input Shape
     if hasattr(obs, 'shape'):
@@ -221,7 +230,7 @@ def main(cfg: DictConfig):
     else:
         update_fn = lambda ts, b: ppo_update_step(ts, b, None)
 
-    backprop_time = measure_fn(
+    backprop_time, backprop_std, backprop_cv, backprop_percentiles = measure_fn(
         "Gradient Backprop (PPO)",
         jax.jit(update_fn),
         train_state, dummy_batch
@@ -235,9 +244,9 @@ def main(cfg: DictConfig):
     if "nas_config" in cfg:
         logger.info(f"  Configured Architecture: {cfg.autorl.get('nas_config', {})}")
     logger.info("="*60)
-    logger.info(f"env_step_time          : {env_step_time:.8f} s")
-    logger.info(f"inference_time         : {inference_time:.8f} s")
-    logger.info(f"gradient_backprop_time : {backprop_time:.8f} s")
+    logger.info(f"env_step_time          : {env_step_time:.8f} s (±{env_step_std:.8f} s, CV={env_step_cv:.4f})")
+    logger.info(f"inference_time         : {inference_time:.8f} s (±{inference_std:.8f} s, CV={inference_cv:.4f})")
+    logger.info(f"gradient_backprop_time : {backprop_time:.8f} s (±{backprop_std:.8f} s, CV={backprop_cv:.4f})")
     logger.info("="*60)
 
 if __name__ == "__main__":
